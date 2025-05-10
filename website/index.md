@@ -46,20 +46,28 @@ git clone git@github.com:The-AI-Alliance/bartlebot.git
 python -m venv venv
 . venv/bin/activate
 python -m pip install .
+
+export PYTHONPATH=.
 ```
 
-## Running Bartlebot
+### Building Data Dependencies
+
+The vectors and knowledge graph derived from case law the first time Bartlebot runs.
 
 ```bash
-export PYTHONPATH=.
-
 bartlebot --verbose
 ```
 
-## Federal Caselaw and Statute Research
+### Running Bartlebot
+
+```bash
+bartlebot --verbose
+```
+
+## Case Law Research
 
 Bartlebot implements question-answering related to
-large, public-domain legal datasets including U.S. federal case law and statutes.
+large, public-domain legal datasets including U.S. case law.
 
 <img src="./assets/images/enrich.png" width="600px" alt="legal kg"/>
 
