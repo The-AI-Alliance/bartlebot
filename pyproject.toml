@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "bartlebot"
+version = "0.0.1"
+description = "Legal Agent Demonstration"
+authors = ["Adam Pingel <oss@pingel.org>"]
+license = "ASFv2"
+readme = "README.md"
+packages = [{include = "bartlebot"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+proscenium = "^0.0.4"
+rich = "^13.9.4"
+typer = "^0.15.2"
+pymilvus = {version = "^2.5.4"}
+pymilvus_model = {version = "^0.3.1"}
+neo4j = "^5.28.1"
+gofannon = "^0.25.13"
+eyecite = "^2.6.11"
+
+[tool.poetry.extras]
+testing = ["pytest"]
+
+[tool.poetry.scripts]
+bartlebot = "bartlebot.bin.bot:app"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
