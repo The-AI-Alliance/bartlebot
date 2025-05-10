@@ -5,8 +5,10 @@
 [![Issues](https://img.shields.io/github/issues/The-AI-Alliance/bartlebot)](https://github.com/The-AI-Alliance/bartlebot/issues)
 [![GitHub stars](https://img.shields.io/github/stars/The-AI-Alliance/bartlebot?style=social)](https://github.com/The-AI-Alliance/bartlebot/stargazers)
 
-Bartlebot is a demonstration of an AI Agent for the legal domain with a Slack integration.  It is based on [Proscenium](https://the-ai-alliance.github.io/bartlebot/), [repo](https://github.com/The-AI-Alliance/bartlebot)
+Bartlebot is a demonstration of an AI Agent for the legal domain with a Slack integration.
 
 See the [website](https://the-ai-alliance.github.io/bartlebot/) for quickstart info, goals, and other links.
 
 To find the Bartlebot community, see the [discussions](https://github.com/The-AI-Alliance/bartlebot/discussions)
+
+It is based on [Proscenium](https://the-ai-alliance.github.io/proscenium/) ( [repo](https://github.com/The-AI-Alliance/proscenium) )
