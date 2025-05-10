@@ -7,7 +7,8 @@ title: Bartlebot
 
 <img src="./assets/images/bartlebot.png" align="left" width="410px" alt="bartlebot"/>
 
-Bartlebot is a demonstration of an AI Agent for the legal domain with a Slack integration.  It is based on Proscenium ([site](https://the-ai-alliance.github.io/proscenium/), [repo](https://github.com/The-AI-Alliance/proscenium) )
+Bartlebot is a demonstration of an AI Agent for the legal domain with a Slack integration.
+It is in early development.
 
 <br clear="left"/>
 
@@ -20,11 +21,27 @@ See the [Bartlebot repository](https://github.com/The-AI-Alliance/bartlebot) on 
 
 ## Quickstart
 
-To Be Written
+Bartlebot is configured to use Llama 4 models hosted by Together.AI.  Any provider supported by [AI Suite](https://github.com/andrewyng/aisuite/) will work.  To stick with this choice,
+you will need to obtain and set the `TOGETHER_API_KEY`.  To change it, see the `demo/config.py` file.
 
-## Resources
+It is configured to use a Neo4j graph database, and needs `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD` to be set.
 
-To find the Bartlebot community, see the [discussions](https://github.com/The-AI-Alliance/bartlebot/discussions)
+Bartlebot is currently implemented as a Slack application.  It needs to have the environment varaibles `SLACK_BOT_TOKEN` and `SLACK_APP_TOKEN` set.
+See the [Proscenium Slack setup](https://github.com/The-AI-Alliance/proscenium/blob/main/docs/slack-app-setup.md) document.
+
+You will also need to set the id of the admin channel as `SLACK_ADMIN_CHANNEL_ID`.
+If you don't happen to know this, run `bartlebot --verbose` (below) to see the list of
+channel ids subscribed to by Proscenium.
+
+```bash
+git clone git@github.com:The-AI-Alliance/bartlebot.git
+python -m venv venv
+. venv/bin/activate
+python -m pip install .
+export PYTHONPATH=.
+
+bartlebot --verbose
+```
 
 ## Federal Caselaw and Statute Research
 
@@ -36,14 +53,16 @@ large, public-domain legal datasets including U.S. federal case law and statutes
 The questions chosen highlight categories of questions where the ability to traverse a
 Knowledge Graph provides advantages over a naive RAG approach.
 
-<img src="./assets/images/legal_kg.png" width="600px" alt="legal kg"/>
+<img src="./assets/images/legal_kg.png" width="400px" alt="legal kg"/>
 
-## Requirements
-
-- Bartlebot is currently implemented as a Slack application.
-- It uses Llama 4 models hosted by Together.AI
-- It makes use of a Neo4j graph database
-
-It will also demonstrate the creation and tuning of custom benchmarks.
+## Benchmarks
 
 Existing legal benchmarks today are very narrow and/or do not map well to customer value.
+
+Bartlebot will demonstrate creating and monitoring domain-specific benchmarks.
+
+## Resources
+
+To find the Bartlebot community, see the [discussions](https://github.com/The-AI-Alliance/bartlebot/discussions)
+
+Bartlebot is built with Proscenium ([site](https://the-ai-alliance.github.io/proscenium/), [repo](https://github.com/The-AI-Alliance/proscenium) )
