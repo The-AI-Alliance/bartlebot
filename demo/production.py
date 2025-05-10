@@ -26,8 +26,6 @@ default_neo4j_password = "password"
 neo4j_password = os.environ.get("NEO4J_PASSWORD", default_neo4j_password)
 
 channel_id_legal = "legal"
-channel_id_literature = "literature"
-channel_id_abacus = "abacus"
 
 
 class Demo(Production):
@@ -53,8 +51,6 @@ class Demo(Production):
     def scenes(self) -> list[Scene]:
 
         return [
-            self.elementary_school_math_class,
-            self.high_school_english_class,
             self.law_library,
         ]
 
