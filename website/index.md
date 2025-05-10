@@ -5,6 +5,8 @@ title: Bartlebot
 
 ## Bartlebot
 
+<img src="./assets/images/bartlebot.png" align="left" width="410px" alt="bartlebot"/>
+
 Bartlebot is a demonstration of an AI Agent for the legal domain with a Slack integration.  It is based on Proscenium ([site](https://the-ai-alliance.github.io/proscenium/), [repo](https://github.com/The-AI-Alliance/proscenium) )
 
 <br clear="left"/>
