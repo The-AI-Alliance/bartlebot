@@ -7,15 +7,16 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 from neo4j import GraphDatabase
 
-from demo.scenes import legal
-
-from demo.scenes.legal.doc_enrichments import DocumentEnrichments
-from demo.scenes.legal.kg import CaseLawKnowledgeGraph, display_knowledge_graph
-from demo.scenes.legal.entity_resolvers import (
-    EntityResolvers,
-    default_embedding_model_id,
-)
-
+from bartlebot.scenes.law_library import DocumentEnrichments
+from bartlebot.scenes.law_library import docs
+from bartlebot.scenes.law_library.doc_enrichments import default_delay
+from bartlebot.scenes.law_library.kg import CaseLawKnowledgeGraph
+from bartlebot.scenes.law_library.kg import display_knowledge_graph
+from bartlebot.scenes.law_library.entity_resolvers import EntityResolvers
+from bartlebot.scenes.law_library.entity_resolvers import default_embedding_model_id
+from bartlebot.scenes.law_library.query_handler import LawLibrarian
+from bartlebot.scenes.law_library.query_handler import user_prompt
+from bartlebot.scenes.law_library.query_handler import default_question
 
 app = typer.Typer(
     help="""
@@ -40,11 +41,11 @@ console = Console()
 log = logging.getLogger(__name__)
 
 
-@app.command(help=f"Enrich documents from {', '.join(legal.docs.hf_dataset_ids)}.")
+@app.command(help=f"Enrich documents from {', '.join(docs.hf_dataset_ids)}.")
 def enrich(
-    docs_per_dataset: int = legal.docs.default_docs_per_dataset,
+    docs_per_dataset: int = docs.default_docs_per_dataset,
     output: Path = default_enrichment_jsonl_file,
-    delay: float = legal.doc_enrichments.default_delay,
+    delay: float = default_delay,
     verbose: bool = False,
 ):
     sub_console = None
@@ -160,14 +161,14 @@ def ask(loop: bool = False, question: str = None, verbose: bool = False):
 
     driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_username, neo4j_password))
 
-    law_librarian = legal.query_handler.LawLibrarian(driver, milvus_uri, None)
+    law_librarian = LawLibrarian(driver, milvus_uri, None)
 
     while True:
 
         if question is None:
             q = Prompt.ask(
-                legal.query_handler.user_prompt,
-                default=legal.query_handler.default_question,
+                user_prompt,
+                default=default_question,
             )
         else:
             q = question
