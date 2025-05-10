@@ -21,23 +21,36 @@ See the [Bartlebot repository](https://github.com/The-AI-Alliance/bartlebot) on 
 
 ## Quickstart
 
+### Inference
+
 Bartlebot is configured to use Llama 4 models hosted by Together.AI.  Any provider supported by [AI Suite](https://github.com/andrewyng/aisuite/) will work.  To stick with this choice,
 you will need to obtain and set the `TOGETHER_API_KEY`.  To change it, see the `demo/config.py` file.
 
+### Knowledge Graph
+
 It is configured to use a Neo4j graph database, and needs `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD` to be set.
+
+### Slack
 
 Bartlebot is currently implemented as a Slack application.  It needs to have the environment varaibles `SLACK_BOT_TOKEN` and `SLACK_APP_TOKEN` set.
 See the [Proscenium Slack setup](https://github.com/The-AI-Alliance/proscenium/blob/main/docs/slack-app-setup.md) document.
 
 You will also need to set the id of the admin channel as `SLACK_ADMIN_CHANNEL_ID`.
-If you don't happen to know this, run `bartlebot --verbose` (below) to see the list of
+If you don't happen to know this, run barblebot in verbose mode to see the list of
 channel ids subscribed to by Proscenium.
+
+### Bartlebot Installation
 
 ```bash
 git clone git@github.com:The-AI-Alliance/bartlebot.git
 python -m venv venv
 . venv/bin/activate
 python -m pip install .
+```
+
+## Running Bartlebot
+
+```bash
 export PYTHONPATH=.
 
 bartlebot --verbose
