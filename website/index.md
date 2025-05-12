@@ -36,7 +36,7 @@ In the root of the repository is a default `bartlebot.yml` file.
 Peruse it to get a sense of the layout and options available.
 
 This file can be edited in place, or copied elsewhere and then provided to
-the `slackbot` command line interface via the `--config-file` parameter.
+the `bartlebot` command line interface via the `--config-file` parameter.
 
 ### Configure Inference
 
