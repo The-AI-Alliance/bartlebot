@@ -17,8 +17,6 @@ hf_dataset_ids = ["free-law/nh"]
 
 hf_dataset_column = "text"
 
-default_docs_per_dataset = 10
-
 
 def retrieve_documents(docs_per_dataset: int = None) -> List[Document]:
 

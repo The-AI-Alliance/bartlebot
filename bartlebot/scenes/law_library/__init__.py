@@ -8,12 +8,9 @@ from proscenium.core import Prop
 from proscenium.core import Character
 from proscenium.core import Scene
 
-from .docs import default_docs_per_dataset
-from .doc_enrichments import DocumentEnrichments, default_delay
+from .doc_enrichments import DocumentEnrichments
 from .kg import CaseLawKnowledgeGraph
 from .entity_resolvers import EntityResolvers
-from .entity_resolvers import default_embedding_model_id
-from .query_handler import default_generation_model_id
 from .query_handler import LawLibrarian
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
@@ -35,8 +32,10 @@ class LawLibrary(Scene):
         neo4j_password: str,
         milvus_uri: str,
         admin_channel_id: str,
-        embedding_model_id: str = default_embedding_model_id,
-        generator_model_id: str = default_generation_model_id,
+        embedding_model_id: str,
+        extraction_model_id: str,
+        generator_model_id: str,
+        control_flow_model_id: str,
         console: Optional[Console] = None,
     ) -> None:
         super().__init__()
@@ -49,35 +48,43 @@ class LawLibrary(Scene):
         self.neo4j_password = neo4j_password
         self.milvus_uri = milvus_uri
         self.embedding_model_id = embedding_model_id
+        self.extraction_model = extraction_model_id
         self.generator_model_id = generator_model_id
         self.console = console
 
         self.doc_enrichments = DocumentEnrichments(
-            self.docs_per_dataset, self.enrichment_jsonl_file, self.delay, self.console
+            docs_per_dataset, enrichment_jsonl_file, extraction_model_id, delay, console
         )
 
         self.case_law_knowledge_graph = CaseLawKnowledgeGraph(
-            self.enrichment_jsonl_file,
-            self.neo4j_uri,
-            self.neo4j_username,
-            self.neo4j_password,
-            self.console,
+            enrichment_jsonl_file,
+            neo4j_uri,
+            neo4j_username,
+            neo4j_password,
+            console,
         )
 
         self.entity_resolvers = EntityResolvers(
-            self.milvus_uri,
-            self.embedding_model_id,
-            self.neo4j_uri,
-            self.neo4j_username,
-            self.neo4j_password,
-            self.console,
+            milvus_uri,
+            embedding_model_id,
+            neo4j_uri,
+            neo4j_username,
+            neo4j_password,
+            console,
         )
 
         self.driver = GraphDatabase.driver(
             neo4j_uri, auth=(neo4j_username, neo4j_password)
         )
 
-        self.law_librarian = LawLibrarian(self.driver, milvus_uri, admin_channel_id)
+        self.law_librarian = LawLibrarian(
+            self.driver,
+            milvus_uri,
+            control_flow_model_id,
+            extraction_model_id,
+            generator_model_id,
+            admin_channel_id,
+        )
 
     def props(self) -> list[Prop]:
 

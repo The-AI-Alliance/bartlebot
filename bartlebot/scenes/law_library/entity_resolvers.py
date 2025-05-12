@@ -10,8 +10,6 @@ from proscenium.patterns.entity_resolver import Resolver
 
 from proscenium.core import Prop
 
-default_embedding_model_id = "all-MiniLM-L6-v2"
-
 log = logging.getLogger(__name__)
 
 case_resolver = Resolver(

@@ -17,7 +17,6 @@ from proscenium.patterns.document_enricher import enrich_documents
 
 from proscenium.core import Prop
 
-from demo.config import default_model_id
 from .docs import doc_as_rich
 from .docs import retriever
 
@@ -81,11 +80,6 @@ class LegalOpinionEnrichments(BaseModel):
     # Denoted by Proscenium framework
     hf_dataset_id: str = Field(description="id of the dataset in HF")
     hf_dataset_index: int = Field(description="index of the document in the HF dataset")
-
-
-default_chunk_extraction_model_id = default_model_id
-
-default_delay = 1.0  # intra-chunk delay between inference calls
 
 
 def doc_enrichments(
@@ -172,12 +166,14 @@ class DocumentEnrichments(Prop):
         self,
         docs_per_dataset: int,
         output: Path,
+        extraction_model_id: str,
         delay: float,
         console: Optional[Console] = None,
     ):
         super().__init__(console)
         self.docs_per_dataset = docs_per_dataset
         self.output = output
+        self.extraction_model_id = extraction_model_id
         self.delay = delay
 
     def build(self, force: bool = False):
@@ -190,7 +186,7 @@ class DocumentEnrichments(Prop):
 
         extract_from_opinion_chunks = make_extract_from_opinion_chunks(
             doc_as_rich,
-            default_chunk_extraction_model_id,
+            self.extraction_model_id,
             chunk_extraction_template,
             LegalOpinionChunkExtractions,
             delay=self.delay,

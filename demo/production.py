@@ -1,7 +1,5 @@
 import logging
 from pathlib import Path
-import os
-
 from rich.console import Console
 
 from proscenium.core import Production
@@ -12,39 +10,43 @@ from bartlebot.scenes import law_library
 
 log = logging.getLogger(__name__)
 
-literature_milvus_uri = "file:/milvus.db"
 
-enrichment_jsonl_file = Path("enrichments.jsonl")
-
-legal_milvus_uri = "file:/grag-milvus.db"
-
-default_neo4j_uri = "bolt://localhost:7687"
-neo4j_uri = os.environ.get("NEO4J_URI", default_neo4j_uri)
-default_neo4j_username = "neo4j"
-neo4j_username = os.environ.get("NEO4J_USERNAME", default_neo4j_username)
-default_neo4j_password = "password"
-neo4j_password = os.environ.get("NEO4J_PASSWORD", default_neo4j_password)
-
-channel_id_legal = "legal"
-
-
-class Demo(Production):
+class BartlebotProduction(Production):
     """
-    A demonstration of Proscenium Scenes (with Characters and Props)
-    interacting with an audience."""
+    BartlebotProduction"""
 
-    def __init__(self, admin_channel_id: str, console: Console) -> None:
+    def __init__(
+        self,
+        legal_channel_name: str,
+        docs_per_dataset: int,
+        enrichment_jsonl_file: Path,
+        delay: float,
+        neo4j_uri: str,
+        neo4j_username: str,
+        neo4j_password: str,
+        milvus_uri: str,
+        admin_channel_id: str,
+        embedding_model_id: str,
+        extraction_model: str,
+        generator_model_id: str,
+        control_flow_model_id: str,
+        console: Console,
+    ) -> None:
 
         self.law_library = law_library.LawLibrary(
-            channel_id_legal,
-            law_library.default_docs_per_dataset,
+            legal_channel_name,
+            docs_per_dataset,
             enrichment_jsonl_file,
-            law_library.default_delay,
+            delay,
             neo4j_uri,
             neo4j_username,
             neo4j_password,
-            legal_milvus_uri,
+            milvus_uri,
             admin_channel_id,
+            embedding_model_id,
+            extraction_model,
+            generator_model_id,
+            control_flow_model_id,
             console=console,
         )
 
@@ -64,8 +66,3 @@ class Demo(Production):
             channel_id_to_handler.update(scene.places(channel_name_to_id))
 
         return channel_id_to_handler
-
-
-def make_production(admin_channel_id: str, console: Console) -> Demo:
-
-    return Demo(admin_channel_id, console)

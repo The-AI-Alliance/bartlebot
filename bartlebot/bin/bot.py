@@ -4,9 +4,12 @@ import os
 import sys
 import logging
 import typer
-import importlib
-from rich.console import Console
+import yaml
 
+import importlib
+
+from pathlib import Path
+from rich.console import Console
 from proscenium.admin import Admin
 
 from proscenium.interfaces.slack import (
@@ -42,16 +45,28 @@ app = typer.Typer(help="Bartlebot")
 log = logging.getLogger(__name__)
 
 
+def load_config(config_file_name: str) -> dict:
+
+    if not os.path.exists(config_file_name):
+        raise FileNotFoundError(
+            f"Configuration file {config_file_name} not found. "
+            "Please provide a valid configuration file."
+        )
+
+    with open(config_file_name, "r", encoding="utf-8") as f:
+        config = yaml.safe_load(f)
+        return config
+
+
 @app.command(help="""Start Bartlebot.""")
 def start(
-    verbose: bool = False,
-    production_module_name: str = typer.Option(
-        "demo.production",
-        "-p",
-        "--production",
-        help="The name of the python module in PYTHONPATH in which the variable production of type proscenium.core.Production is defined.",
+    config_file_name: str = typer.Option(
+        Path("bartlebot.yml"),
+        "-c",
+        "--config",
+        help="The name of the Proscenium YAML configuration file.",
     ),
-    force_rebuild: bool = False,
+    verbose: bool = False,
 ):
 
     console = Console()
@@ -60,18 +75,51 @@ def start(
     if verbose:
         log.setLevel(logging.INFO)
         logging.getLogger("proscenium").setLevel(logging.INFO)
+        logging.getLogger("bartlebot").setLevel(logging.INFO)
         logging.getLogger("demo").setLevel(logging.INFO)
         sub_console = console
 
     console.print(header())
 
-    production_module = importlib.import_module(production_module_name, package=None)
-
     slack_admin_channel_id = os.environ.get("SLACK_ADMIN_CHANNEL_ID")
     # Note that the checking of the existence of the admin channel id is delayed
     # until after the subscribed channels are shown.
 
-    production = production_module.make_production(slack_admin_channel_id, sub_console)
+    config = load_config(config_file_name)
+
+    production_config = config.get("production", {})
+
+    inference_config = config.get("inference", {})
+    # slack_config = config.get("slack", {})
+    graph_config = config.get("graph", {})
+    vectors_config = config.get("vectors", {})
+    enrichments_config = config.get("enrichments", {})
+    scenes_config = production_config.get("scenes", {})
+    law_library_config = scenes_config.get("law_library", {})
+
+    production_module_name = production_config.get("module", None)
+    production_class_name = production_config.get("class", None)
+    production_module = importlib.import_module(production_module_name, package=None)
+    ProductionClass = production_module.BartlebotProduction
+    # PC = production_module.__getattr__(production_class_name)
+
+    # production = production_module.make_production(slack_admin_channel_id, sub_console)
+    production = ProductionClass(
+        law_library_config["channel"],
+        enrichments_config["docs_per_dataset"],
+        Path(enrichments_config["jsonl_file"]),
+        inference_config["delay"],
+        graph_config.get("neo4j_uri", os.environ.get("NEO4J_URI")),
+        graph_config.get("neo4j_username", os.environ.get("NEO4J_USERNAME")),
+        graph_config.get("neo4j_password", os.environ.get("NEO4J_PASSWORD")),
+        vectors_config["milvus_uri"],
+        slack_admin_channel_id,
+        vectors_config["embedding_model"],
+        inference_config["extraction_model"],
+        inference_config["generator_model"],
+        inference_config["control_flow_model"],
+        sub_console,
+    )
 
     console.print("Preparing props...")
     production.prepare_props()

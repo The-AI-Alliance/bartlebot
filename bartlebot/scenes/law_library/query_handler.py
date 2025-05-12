@@ -19,7 +19,6 @@ from proscenium.verbs.complete import complete_simple
 from proscenium.verbs.vector_database import vector_db
 from proscenium.patterns.graph_rag import query_to_prompts
 
-from demo.config import default_model_id
 from .docs import retrieve_document
 from .docs import topic
 
@@ -29,9 +28,6 @@ user_prompt = f"What is your question about {topic}?"
 
 # default_question = "How has Judge Kenison used Ballou v. Ballou to rule on cases?"
 default_question = "How has 291 A.2d 605 been used in NH caselaw?"
-
-
-default_query_extraction_model_id = default_model_id
 
 # TODO include the graph schema in `wants_to_handle_template`
 
@@ -223,24 +219,32 @@ def context_to_prompts(
     return generation_system_prompt, user_prompt
 
 
-default_generation_model_id = default_model_id
-
-
 class LawLibrarian(Character):
     """
     A law librarian that can answer questions about case law."""
 
-    def __init__(self, driver: Driver, milvus_uri: str, admin_channel_id: str):
+    def __init__(
+        self,
+        driver: Driver,
+        milvus_uri: str,
+        query_extraction_model_id: str,
+        control_flow_model_id: str,
+        generation_model_id: str,
+        admin_channel_id: str,
+    ):
         super().__init__(admin_channel_id=admin_channel_id)
         self.driver = driver
         self.milvus_uri = milvus_uri
+        self.query_extraction_model_id = query_extraction_model_id
+        self.control_flow_model_id = control_flow_model_id
+        self.generation_model_id = generation_model_id
 
     def wants_to_handle(self, channel_id: str, speaker_id: str, utterance: str) -> bool:
 
         log.info("handle? channel_id = %s, speaker_id = %s", channel_id, speaker_id)
 
         response = complete_simple(
-            model_id=default_model_id,
+            model_id=self.control_flow_model_id,
             system_prompt=control_flow_system_prompt,
             user_prompt=wants_to_handle_template.format(text=utterance),
             response_format={
@@ -265,7 +269,7 @@ class LawLibrarian(Character):
 
         prompts = query_to_prompts(
             utterance,
-            default_query_extraction_model_id,
+            self.query_extraction_model_id,
             self.milvus_uri,
             self.driver,
             query_extract,
@@ -285,7 +289,7 @@ class LawLibrarian(Character):
             system_prompt, user_prompt = prompts
 
             response = complete_simple(
-                default_generation_model_id, system_prompt, user_prompt
+                self.generation_model_id, system_prompt, user_prompt
             )
 
             yield channel_id, response

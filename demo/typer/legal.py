@@ -1,3 +1,5 @@
+from typing import Optional
+
 import typer
 import os
 import logging
@@ -9,11 +11,9 @@ from neo4j import GraphDatabase
 
 from bartlebot.scenes.law_library import DocumentEnrichments
 from bartlebot.scenes.law_library import docs
-from bartlebot.scenes.law_library.doc_enrichments import default_delay
 from bartlebot.scenes.law_library.kg import CaseLawKnowledgeGraph
 from bartlebot.scenes.law_library.kg import display_knowledge_graph
 from bartlebot.scenes.law_library.entity_resolvers import EntityResolvers
-from bartlebot.scenes.law_library.entity_resolvers import default_embedding_model_id
 from bartlebot.scenes.law_library.query_handler import LawLibrarian
 from bartlebot.scenes.law_library.query_handler import user_prompt
 from bartlebot.scenes.law_library.query_handler import default_question
@@ -24,8 +24,6 @@ Graph extraction and question answering with GraphRAG on caselaw.
 """
 )
 
-default_enrichment_jsonl_file = Path("enrichments.jsonl")
-
 default_neo4j_uri = "bolt://localhost:7687"
 default_neo4j_username = "neo4j"
 default_neo4j_password = "password"
@@ -34,8 +32,6 @@ neo4j_help = f"""Uses Neo4j at NEO4J_URI, with a default of {default_neo4j_uri},
 auth credentials NEO4J_USERNAME and NEO4J_PASSWORD, with defaults of
 {default_neo4j_username} and {default_neo4j_password}."""
 
-default_milvus_uri = "file:/grag-milvus.db"
-
 console = Console()
 
 log = logging.getLogger(__name__)
@@ -43,9 +39,10 @@ log = logging.getLogger(__name__)
 
 @app.command(help=f"Enrich documents from {', '.join(docs.hf_dataset_ids)}.")
 def enrich(
-    docs_per_dataset: int = docs.default_docs_per_dataset,
-    output: Path = default_enrichment_jsonl_file,
-    delay: float = default_delay,
+    docs_per_dataset: int,
+    output: Path,
+    extraction_model_id: str,
+    delay: float = 1.0,
     verbose: bool = False,
 ):
     sub_console = None
@@ -54,7 +51,9 @@ def enrich(
         logging.getLogger("demo").setLevel(logging.INFO)
         sub_console = Console()
 
-    doc_enrichments = DocumentEnrichments(docs_per_dataset, output, delay, sub_console)
+    doc_enrichments = DocumentEnrichments(
+        docs_per_dataset, output, extraction_model_id, delay, sub_console
+    )
 
     console.print("Enriching documents")
     doc_enrichments.build()
@@ -65,7 +64,7 @@ def enrich(
 {neo4j_help}"""
 )
 def load_graph(
-    input: Path = default_enrichment_jsonl_file,
+    input: Path,
     verbose: bool = False,
 ):
     neo4j_uri = os.environ.get("NEO4J_URI", default_neo4j_uri)
@@ -115,7 +114,7 @@ def display_graph(verbose: bool = False):
 Writes to milvus at MILVUS_URI, with a default of {default_milvus_uri}.
 {neo4j_help}"""
 )
-def load_resolver(verbose: bool = False):
+def load_resolver(milvus_uri: Optional[str], verbose: bool = False):
 
     sub_console = None
     if verbose:
@@ -144,16 +143,29 @@ def load_resolver(verbose: bool = False):
 
 @app.command(
     help=f"""Ask a legal question using the knowledge graph and entity resolver established in the previous steps.
-Uses milvus at MILVUS_URI, with a default of {default_milvus_uri}.
 {neo4j_help}"""
 )
-def ask(loop: bool = False, question: str = None, verbose: bool = False):
+def ask(
+    loop: bool = False,
+    question: str = None,
+    milvus_uri: str = typer.Option(
+        default=None,
+        help="URI of the Milvus vector database. If not provided uses milvus at MILVUS_URI environment variable.",
+    ),
+    verbose: bool = False,
+):
 
     if verbose:
         logging.getLogger("proscenium").setLevel(logging.INFO)
         logging.getLogger("demo").setLevel(logging.INFO)
 
-    milvus_uri = os.environ.get("MILVUS_URI", default_milvus_uri)
+    if milvus_uri is None:
+        milvus_uri = os.environ.get("MILVUS_URI", None)
+    if milvus_uri is None:
+        raise ValueError(
+            "MILVUS_URI environment variable not set. "
+            "Please provide a Milvus URI using the --milvus-uri option."
+        )
 
     neo4j_uri = os.environ.get("NEO4J_URI", default_neo4j_uri)
     neo4j_username = os.environ.get("NEO4J_USERNAME", default_neo4j_username)
