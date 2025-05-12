@@ -1,20 +1,10 @@
-from typing import Optional
-
 import typer
-import os
 import logging
 from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt
-from neo4j import GraphDatabase
 
-from bartlebot.scenes.law_library import DocumentEnrichments
-from bartlebot.scenes.law_library import docs
-from bartlebot.scenes.law_library.kg import CaseLawKnowledgeGraph
-from bartlebot.scenes.law_library.kg import display_knowledge_graph
-from bartlebot.scenes.law_library.entity_resolvers import EntityResolvers
-from bartlebot.scenes.law_library.query_handler import LawLibrarian
 from bartlebot.scenes.law_library.query_handler import user_prompt
 from bartlebot.scenes.law_library.query_handler import default_question
 
