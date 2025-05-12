@@ -46,8 +46,6 @@ git clone git@github.com:The-AI-Alliance/bartlebot.git
 python -m venv venv
 . venv/bin/activate
 python -m pip install .
-
-export PYTHONPATH=.
 ```
 
 ### Building Data Dependencies
