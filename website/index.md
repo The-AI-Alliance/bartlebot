@@ -70,11 +70,7 @@ the configuration file as the key `production.scenes.law_library.channel`.
 Be sure that the Prosceinum app has been invited to that channel.
 
 Bartlebot requires a channel to be designated as the administration channel.
-If you don't have this value, run barblebot in verbose mode to see the list of
-channel ids subscribed to by Proscenium.
-
-The value can either be added as the value for `slack.slack_admin_channel_id` in the config file,
-or as an environment variable named `SLACK_ADMIN_CHANNEL_ID`.
+Configure this by setting the `slack.admin_channel` value in the configuration file.
 
 ### Build Data Dependencies
 

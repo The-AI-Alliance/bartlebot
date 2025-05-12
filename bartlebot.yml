@@ -3,24 +3,16 @@ production:
   class: BartlebotProduction
   scenes:
     law_library:
-      class: LawLibrary
-      # module: bartlebot.scenes.law_library.LawLibrary
-      # class: bartlebot.scenes.law_library.LawLibrary
       channel: legal
 
 inference:
-  provider: together
   generator_model: "together:meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
   extraction_model: "together:meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
   control_flow_model: "together:meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
   delay: 1.0
-  # together:meta-llama/Llama-4-Scout-17B-16E-Instruct
-  # ollama:llama3.2
-  # ollama:granite3.2
-  # openai:gpt-4o
 
-#slack:
-#  slack_admin_channel_id:
+slack:
+  admin_channel: "deus-ex-machina"
 
 # graph:
   # neo4j_uri: "bolt://localhost:7687"

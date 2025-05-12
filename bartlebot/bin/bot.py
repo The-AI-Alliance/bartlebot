@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 import sys
 import logging
 import typer
@@ -149,10 +148,6 @@ def slack(
 
     console.print(header())
 
-    slack_admin_channel_id = os.environ.get("SLACK_ADMIN_CHANNEL_ID")
-    # Note that the checking of the existence of the admin channel id is delayed
-    # until after the subscribed channels are shown.
-
     production, config = production_from_config(config_file, sub_console)
 
     console.print("Preparing props...")
@@ -170,18 +165,23 @@ def slack(
     console.print(channel_table(channels_by_id))
     console.print()
 
+    slack_admin_channel = config.get("slack", {}).get("admin_channel", None)
+
+    if slack_admin_channel is None:
+        raise ValueError(
+            "slack.admin_channel is not set. "
+            "Please set it to the channel name of the Proscenium admin channel."
+        )
+    slack_admin_channel_id = channel_name_to_id.get(slack_admin_channel, None)
     if slack_admin_channel_id is None:
         raise ValueError(
-            "SLACK_ADMIN_CHANNEL_ID environment variable not set. "
-            "Please set it to the channel ID of the Proscenium admin channel."
-        )
-    if slack_admin_channel_id not in channels_by_id:
-        raise ValueError(
-            f"Admin channel {slack_admin_channel_id} not found in subscribed channels."
+            f"Admin channel {slack_admin_channel} not found in subscribed channels."
         )
 
     admin = Admin(slack_admin_channel_id)
-    log.info("Admin handler started.")
+    log.info(
+        "Admin handler started %s %s.", slack_admin_channel, slack_admin_channel_id
+    )
 
     log.info("Places, please!")
     channel_id_to_character = production.places(channel_name_to_id)
