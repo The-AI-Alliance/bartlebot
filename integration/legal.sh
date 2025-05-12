@@ -4,8 +4,8 @@ echo "Legal Integration Test"
 
 echo "Building resources"
 
-python -m bartlebot.bin.cli legal build --config-file ../bartlebot.yml --verbose
+python -m bartlebot.bin.bot legal build --config-file ../bartlebot.yml --verbose
 
-echo "Answer default legal question"
+echo "Handle default legal question"
 
-echo "" | python -m bartlebot.bin.cli legal handle --config-file ../bartlebot.yml --verbose
+echo "" | python -m bartlebot.bin.bot legal handle --config-file ../bartlebot.yml --verbose
