@@ -18,6 +18,8 @@ from bartlebot.scenes.law_library.query_handler import LawLibrarian
 from bartlebot.scenes.law_library.query_handler import user_prompt
 from bartlebot.scenes.law_library.query_handler import default_question
 
+from bartlebot.bin import production_from_config
+
 app = typer.Typer(
     help="""
 Graph extraction and question answering with GraphRAG on caselaw.
@@ -39,154 +41,47 @@ console = Console()
 log = logging.getLogger(__name__)
 
 
-@app.command(help=f"Enrich documents from {', '.join(docs.hf_dataset_ids)}.")
-def enrich(
-    docs_per_dataset: int,
-    output: Path,
-    extraction_model_id: str,
-    delay: float = 1.0,
-    verbose: bool = False,
-):
-    sub_console = None
-    if verbose:
-        logging.getLogger("proscenium").setLevel(logging.INFO)
-        logging.getLogger("demo").setLevel(logging.INFO)
-        sub_console = Console()
-
-    doc_enrichments = DocumentEnrichments(
-        docs_per_dataset, output, extraction_model_id, delay, sub_console
-    )
-
-    console.print("Enriching documents")
-    doc_enrichments.build()
-
-
-@app.command(
-    help=f"""Load enrichments from a .jsonl file into the knowledge graph.
-{neo4j_help}"""
-)
-def load_graph(
-    input: Path,
-    verbose: bool = False,
-):
-    neo4j_uri = os.environ.get("NEO4J_URI", default_neo4j_uri)
-    neo4j_username = os.environ.get("NEO4J_USERNAME", default_neo4j_username)
-    neo4j_password = os.environ.get("NEO4J_PASSWORD", default_neo4j_password)
-
-    sub_console = None
-    if verbose:
-        logging.getLogger("proscenium").setLevel(logging.INFO)
-        logging.getLogger("demo").setLevel(logging.INFO)
-        sub_console = Console()
-
-    case_law_knowledge_graph = CaseLawKnowledgeGraph(
-        input,
-        neo4j_uri,
-        neo4j_username,
-        neo4j_password,
-        console=sub_console,
-    )
-
-    console.print("Loading knowledge graph")
-    case_law_knowledge_graph.build()
-
-
-@app.command(
-    help=f"""Display the knowledge graph as stored in the graph db.
-{neo4j_help}"""
-)
-def display_graph(verbose: bool = False):
-
-    if verbose:
-        logging.getLogger("proscenium").setLevel(logging.INFO)
-        logging.getLogger("demo").setLevel(logging.INFO)
-
-    neo4j_uri = os.environ.get("NEO4J_URI", default_neo4j_uri)
-    neo4j_username = os.environ.get("NEO4J_USERNAME", default_neo4j_username)
-    neo4j_password = os.environ.get("NEO4J_PASSWORD", default_neo4j_password)
-
-    driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_username, neo4j_password))
-
-    console.print("Showing knowledge graph")
-    display_knowledge_graph(driver, console)
-
-
-@app.command(
-    help=f"""Load the vector db used for field disambiguation.
-{neo4j_help}"""
-)
-def load_resolver(
-    milvus_uri: Optional[str] = typer.Option(
-        default=None,
-        help="URI of the Milvus vector database. If not provided uses milvus at MILVUS_URI environment variable.",
+@app.command(help="Build all prerequisite resources for the law library.")
+def build(
+    config_file: Path = typer.Option(
+        default=Path("bartlebot.yaml"),
+        help="Path to the configuration file.",
     ),
     verbose: bool = False,
 ):
-
     sub_console = None
     if verbose:
         logging.getLogger("proscenium").setLevel(logging.INFO)
         logging.getLogger("demo").setLevel(logging.INFO)
         sub_console = Console()
 
-    if milvus_uri is None:
-        milvus_uri = os.environ.get("MILVUS_URI", None)
-    if milvus_uri is None:
-        raise ValueError(
-            "MILVUS_URI environment variable not set. "
-            "Please provide a Milvus URI using the --milvus-uri option."
-        )
+    production, config = production_from_config(config_file, sub_console=sub_console)
 
-    neo4j_uri = os.environ.get("NEO4J_URI", default_neo4j_uri)
-    neo4j_username = os.environ.get("NEO4J_USERNAME", default_neo4j_username)
-    neo4j_password = os.environ.get("NEO4J_PASSWORD", default_neo4j_password)
-
-    entity_resolvers = EntityResolvers(
-        milvus_uri,
-        default_embedding_model_id,
-        neo4j_uri,
-        neo4j_username,
-        neo4j_password,
-        console=sub_console,
-    )
-
-    console.print("Loading entity resolver")
-    entity_resolvers.build()
+    console.print("Building all resources")
+    production.prepare_props()
+    console.print("Done.)")
 
 
 @app.command(
     help=f"""Ask a legal question using the knowledge graph and entity resolver established in the previous steps.
 {neo4j_help}"""
 )
-def ask(
+def handle(
     loop: bool = False,
     question: str = None,
-    milvus_uri: Optional[str] = typer.Option(
-        default=None,
-        help="URI of the Milvus vector database. If not provided uses milvus at MILVUS_URI environment variable.",
+    config_file: Path = typer.Option(
+        default=Path("bartlebot.yaml"),
+        help="Path to the configuration file.",
     ),
     verbose: bool = False,
 ):
-
+    sub_console = None
     if verbose:
         logging.getLogger("proscenium").setLevel(logging.INFO)
         logging.getLogger("demo").setLevel(logging.INFO)
+        sub_console = Console()
 
-    if milvus_uri is None:
-        milvus_uri = os.environ.get("MILVUS_URI", None)
-    if milvus_uri is None:
-        raise ValueError(
-            "MILVUS_URI environment variable not set. "
-            "Please provide a Milvus URI using the --milvus-uri option."
-        )
-
-    neo4j_uri = os.environ.get("NEO4J_URI", default_neo4j_uri)
-    neo4j_username = os.environ.get("NEO4J_USERNAME", default_neo4j_username)
-    neo4j_password = os.environ.get("NEO4J_PASSWORD", default_neo4j_password)
-
-    driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_username, neo4j_password))
-
-    law_librarian = LawLibrarian(driver, milvus_uri, None)
+    production, config = production_from_config(config_file, sub_console=sub_console)
 
     while True:
 
@@ -200,7 +95,9 @@ def ask(
 
         console.print(Panel(q, title="Question"))
 
-        for channel_id, answer in law_librarian.handle(None, None, q):
+        for channel_id, answer in production.law_library.law_librarian.handle(
+            None, None, q
+        ):
             console.print(Panel(answer, title="Answer"))
 
         if loop:
@@ -208,4 +105,4 @@ def ask(
         else:
             break
 
-    driver.close()
+    production.curtain()

@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
 
-from typing import Optional
-
 import os
 import sys
 import logging
 import typer
-import yaml
-import importlib
 from pathlib import Path
 from rich.console import Console
 
 from proscenium.admin import Admin
-from proscenium.core import Production
+
 from proscenium.interfaces.slack import (
     get_slack_auth,
     channel_table,
@@ -29,6 +25,8 @@ from proscenium.interfaces.slack import (
 
 from proscenium.verbs.display import header
 
+from bartlebot.bin import production_from_config
+
 logging.basicConfig(
     stream=sys.stdout,
     format="%(asctime)s  %(levelname)-8s %(name)s: %(message)s",
@@ -44,36 +42,6 @@ logging.basicConfig(
 app = typer.Typer(help="Bartlebot")
 
 log = logging.getLogger(__name__)
-
-
-def load_config(config_file_name: Path) -> dict:
-
-    if not config_file_name.exists():
-        raise FileNotFoundError(
-            f"Configuration file {config_file_name} not found. "
-            "Please provide a valid configuration file."
-        )
-
-    with open(config_file_name, "r", encoding="utf-8") as f:
-        config = yaml.safe_load(f)
-        return config
-
-
-def production_from_config(
-    config_file_name: Path, sub_console: Optional[Console] = None
-) -> tuple[dict, Production]:
-
-    config = load_config(config_file_name)
-
-    production_config = config.get("production", {})
-
-    production_module_name = production_config.get("module", None)
-
-    production_module = importlib.import_module(production_module_name, package=None)
-
-    production = production_module.make_production(config, sub_console)
-
-    return config, production
 
 
 @app.command(help="""Start Bartlebot.""")
@@ -102,7 +70,7 @@ def start(
     # Note that the checking of the existence of the admin channel id is delayed
     # until after the subscribed channels are shown.
 
-    config, production = production_from_config(config_file_name, sub_console)
+    production, config = production_from_config(config_file_name, sub_console)
 
     console.print("Preparing props...")
     production.prepare_props()
