@@ -129,7 +129,7 @@ def handle(
     production.curtain()
 
 
-@app.command(help="""Start Bartlebot.""")
+@app.command(help="""Attach Bartlebot to the configured Slack App.""")
 def slack(
     config_file: Path = typer.Option(
         default_config_path,
