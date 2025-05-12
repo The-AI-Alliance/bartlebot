@@ -1,4 +1,7 @@
+from typing import Dict, Optional
+
 import logging
+import os
 from pathlib import Path
 from rich.console import Console
 
@@ -17,6 +20,7 @@ class BartlebotProduction(Production):
 
     def __init__(
         self,
+        admin_channel_id: str,
         legal_channel_name: str,
         docs_per_dataset: int,
         enrichment_jsonl_file: Path,
@@ -25,15 +29,16 @@ class BartlebotProduction(Production):
         neo4j_username: str,
         neo4j_password: str,
         milvus_uri: str,
-        admin_channel_id: str,
         embedding_model_id: str,
         extraction_model: str,
         generator_model_id: str,
         control_flow_model_id: str,
         console: Console,
     ) -> None:
+        super().__init__(admin_channel_id, console)
 
         self.law_library = law_library.LawLibrary(
+            admin_channel_id,
             legal_channel_name,
             docs_per_dataset,
             enrichment_jsonl_file,
@@ -42,7 +47,6 @@ class BartlebotProduction(Production):
             neo4j_username,
             neo4j_password,
             milvus_uri,
-            admin_channel_id,
             embedding_model_id,
             extraction_model,
             generator_model_id,
@@ -66,3 +70,35 @@ class BartlebotProduction(Production):
             channel_id_to_handler.update(scene.places(channel_name_to_id))
 
         return channel_id_to_handler
+
+
+def make_production(
+    config: Dict, console: Optional[Console] = None
+) -> BartlebotProduction:
+
+    production_config = config.get("production", {})
+
+    inference_config = config.get("inference", {})
+    slack_config = config.get("slack", {})
+    graph_config = config.get("graph", {})
+    vectors_config = config.get("vectors", {})
+    enrichments_config = config.get("enrichments", {})
+    scenes_config = production_config.get("scenes", {})
+    law_library_config = scenes_config.get("law_library", {})
+
+    return BartlebotProduction(
+        slack_config.get("admin_channel_id", os.environ.get("SLACK_ADMIN_CHANNEL_ID")),
+        law_library_config["channel"],
+        enrichments_config["docs_per_dataset"],
+        Path(enrichments_config["jsonl_file"]),
+        inference_config["delay"],
+        graph_config.get("neo4j_uri", os.environ.get("NEO4J_URI")),
+        graph_config.get("neo4j_username", os.environ.get("NEO4J_USERNAME")),
+        graph_config.get("neo4j_password", os.environ.get("NEO4J_PASSWORD")),
+        vectors_config["milvus_uri"],
+        vectors_config["embedding_model"],
+        inference_config["extraction_model"],
+        inference_config["generator_model"],
+        inference_config["control_flow_model"],
+        console=console,
+    )

@@ -1,5 +1,5 @@
 production:
-  module: demo.production
+  module: bartlebot.production
   class: BartlebotProduction
   scenes:
     law_library:
@@ -19,8 +19,8 @@ inference:
   # ollama:granite3.2
   # openai:gpt-4o
 
-slack:
-  slack_admin_channel_idx: "TBD"
+#slack:
+#  slack_admin_channel_id:
 
 # graph:
   # neo4j_uri: "bolt://localhost:7687"

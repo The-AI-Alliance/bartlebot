@@ -23,6 +23,7 @@ class LawLibrary(Scene):
 
     def __init__(
         self,
+        admin_channel_id: str,
         channel_id_legal: str,
         docs_per_dataset: int,
         enrichment_jsonl_file: Path,
@@ -31,7 +32,6 @@ class LawLibrary(Scene):
         neo4j_username: str,
         neo4j_password: str,
         milvus_uri: str,
-        admin_channel_id: str,
         embedding_model_id: str,
         extraction_model_id: str,
         generator_model_id: str,
@@ -39,6 +39,7 @@ class LawLibrary(Scene):
         console: Optional[Console] = None,
     ) -> None:
         super().__init__()
+        self.admin_channel_id = admin_channel_id
         self.channel_id_legal = channel_id_legal
         self.docs_per_dataset = docs_per_dataset
         self.enrichment_jsonl_file = enrichment_jsonl_file

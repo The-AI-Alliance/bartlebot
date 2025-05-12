@@ -21,14 +21,38 @@ See the [Bartlebot repository](https://github.com/The-AI-Alliance/bartlebot) on 
 
 ## Quickstart
 
+### Bartlebot Installation
+
+```bash
+git clone git@github.com:The-AI-Alliance/bartlebot.git
+python -m venv venv
+. venv/bin/activate
+python -m pip install .
+```
+
+### Configuration
+
+In the root of the repository is a default `bartlebot.yml` file.
+
 ### Inference
 
-Bartlebot is configured to use Llama 4 models hosted by Together.AI.  Any provider supported by [AI Suite](https://github.com/andrewyng/aisuite/) will work.  To stick with this choice,
-you will need to obtain and set the `TOGETHER_API_KEY`.  To change it, see the `demo/config.py` file.
+Bartlebot is configured to use Llama 4 models hosted by [Together.AI](https://www.together.ai/) by default.
+Any provider supported by [AI Suite](https://github.com/andrewyng/aisuite/) will work.
+
+To use inference on Together.AI, you will need to obtain and set the `TOGETHER_API_KEY`.
+New accounts come with a small amount of free credit to get started.
+
+To use another provider, change the model id strings.
 
 ### Knowledge Graph
 
-It is configured to use a Neo4j graph database, and needs `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD` to be set.
+Bartlebot is configured to use a Neo4j graph database.
+Neo4j provides [free sandbox](https://neo4j.com/sandbox/) instances.
+
+The URI goes in `graph.neo4j_uri` in `bartlebot.yml`
+
+Set the values for `NEO4J_USERNAME` and `NEO4J_PASSWORD` as either environment variables
+or in the `graph` section of the configuraiton file (lower-cased).
 
 ### Slack
 
@@ -38,15 +62,6 @@ See the [Proscenium Slack setup](https://github.com/The-AI-Alliance/proscenium/b
 You will also need to set the id of the admin channel as `SLACK_ADMIN_CHANNEL_ID`.
 If you don't happen to know this, run barblebot in verbose mode to see the list of
 channel ids subscribed to by Proscenium.
-
-### Bartlebot Installation
-
-```bash
-git clone git@github.com:The-AI-Alliance/bartlebot.git
-python -m venv venv
-. venv/bin/activate
-python -m pip install .
-```
 
 ### Building Data Dependencies
 
