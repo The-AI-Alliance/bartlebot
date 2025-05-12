@@ -37,11 +37,10 @@ In the root of the repository is a default `bartlebot.yml` file.
 ### Inference
 
 Bartlebot is configured to use Llama 4 models hosted by [Together.AI](https://www.together.ai/) by default.
-Any provider supported by [AI Suite](https://github.com/andrewyng/aisuite/) will work.
-
 To use inference on Together.AI, you will need to obtain and set the `TOGETHER_API_KEY`.
 New accounts come with a small amount of free credit to get started.
 
+Any provider supported by [AI Suite](https://github.com/andrewyng/aisuite/) will work.
 To use another provider, change the model id strings.
 
 ### Knowledge Graph
@@ -49,19 +48,29 @@ To use another provider, change the model id strings.
 Bartlebot is configured to use a Neo4j graph database.
 Neo4j provides [free sandbox](https://neo4j.com/sandbox/) instances.
 
-The URI goes in `graph.neo4j_uri` in `bartlebot.yml`
+Enter your Neo4j URI in `graph.neo4j_uri` in `bartlebot.yml`
 
 Set the values for `NEO4J_USERNAME` and `NEO4J_PASSWORD` as either environment variables
 or in the `graph` section of the configuraiton file (lower-cased).
 
-### Slack
+### Slack App
 
-Bartlebot is currently implemented as a Slack application.  It needs to have the environment varaibles `SLACK_BOT_TOKEN` and `SLACK_APP_TOKEN` set.
+Bartlebot is implemented as a Slack application.
 See the [Proscenium Slack setup](https://github.com/The-AI-Alliance/proscenium/blob/main/docs/slack-app-setup.md) document.
+Provide the bot and app tokens in the environment varaibles `SLACK_BOT_TOKEN` and `SLACK_APP_TOKEN`, respectively.
 
-You will also need to set the id of the admin channel as `SLACK_ADMIN_CHANNEL_ID`.
-If you don't happen to know this, run barblebot in verbose mode to see the list of
+### Slack Channels
+
+The main channel for the law librarian feature is set by name in
+the configuration file as the key `production.scenes.law_library.channel`.
+Be sure that the Prosceinum app has been invited to that channel.
+
+Bartlebot requires a channel to be designated as the administration channel.
+If you don't have this value, run barblebot in verbose mode to see the list of
 channel ids subscribed to by Proscenium.
+
+The value can either be added as the value for `slack.slack_admin_channel_id` in the config file,
+or as an environment variable named `SLACK_ADMIN_CHANNEL_ID`.
 
 ### Building Data Dependencies
 
