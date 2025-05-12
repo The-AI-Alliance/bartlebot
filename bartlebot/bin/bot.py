@@ -76,7 +76,6 @@ def start(
         log.setLevel(logging.INFO)
         logging.getLogger("proscenium").setLevel(logging.INFO)
         logging.getLogger("bartlebot").setLevel(logging.INFO)
-        logging.getLogger("demo").setLevel(logging.INFO)
         sub_console = console
 
     console.print(header())

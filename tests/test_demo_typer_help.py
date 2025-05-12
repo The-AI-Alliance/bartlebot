@@ -3,7 +3,7 @@ import pytest
 from click import Command
 from typer.main import get_command
 
-from demo.cli import app
+from bartlebot.bin.cli import app
 
 
 def _check_help_on_command(command: Command):

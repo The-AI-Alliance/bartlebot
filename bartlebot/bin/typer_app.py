@@ -24,6 +24,8 @@ Graph extraction and question answering with GraphRAG on caselaw.
 """
 )
 
+default_embedding_model_id = "all-MiniLM-L6-v2"
+
 default_neo4j_uri = "bolt://localhost:7687"
 default_neo4j_username = "neo4j"
 default_neo4j_password = "password"
@@ -111,10 +113,15 @@ def display_graph(verbose: bool = False):
 
 @app.command(
     help=f"""Load the vector db used for field disambiguation.
-Writes to milvus at MILVUS_URI, with a default of {default_milvus_uri}.
 {neo4j_help}"""
 )
-def load_resolver(milvus_uri: Optional[str], verbose: bool = False):
+def load_resolver(
+    milvus_uri: Optional[str] = typer.Option(
+        default=None,
+        help="URI of the Milvus vector database. If not provided uses milvus at MILVUS_URI environment variable.",
+    ),
+    verbose: bool = False,
+):
 
     sub_console = None
     if verbose:
@@ -122,7 +129,13 @@ def load_resolver(milvus_uri: Optional[str], verbose: bool = False):
         logging.getLogger("demo").setLevel(logging.INFO)
         sub_console = Console()
 
-    milvus_uri = os.environ.get("MILVUS_URI", default_milvus_uri)
+    if milvus_uri is None:
+        milvus_uri = os.environ.get("MILVUS_URI", None)
+    if milvus_uri is None:
+        raise ValueError(
+            "MILVUS_URI environment variable not set. "
+            "Please provide a Milvus URI using the --milvus-uri option."
+        )
 
     neo4j_uri = os.environ.get("NEO4J_URI", default_neo4j_uri)
     neo4j_username = os.environ.get("NEO4J_USERNAME", default_neo4j_username)
@@ -148,7 +161,7 @@ def load_resolver(milvus_uri: Optional[str], verbose: bool = False):
 def ask(
     loop: bool = False,
     question: str = None,
-    milvus_uri: str = typer.Option(
+    milvus_uri: Optional[str] = typer.Option(
         default=None,
         help="URI of the Milvus vector database. If not provided uses milvus at MILVUS_URI environment variable.",
     ),
