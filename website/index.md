@@ -8,7 +8,7 @@ title: Bartlebot
 Bartlebot is a demonstration of an AI Agent for the legal domain with a Slack integration.
 It is in early development.
 
-<img src="./assets/images/bartlebot.png" align="left" width="410px" alt="bartlebot"/>
+<img src="./assets/images/bartlebot.png" align="left" width="205px" alt="bartlebot"/>
 
 ## Repository
 
