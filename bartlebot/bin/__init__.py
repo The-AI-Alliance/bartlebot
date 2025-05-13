@@ -1,9 +1,8 @@
+from typing import Callable, Optional
 import logging
-
-from pathlib import Path
-import importlib
-from typing import Optional
 import yaml
+import importlib
+from pathlib import Path
 from rich.console import Console
 from proscenium.core import Production
 
@@ -24,7 +23,9 @@ def load_config(config_file_name: Path) -> dict:
 
 
 def production_from_config(
-    config_file_name: Path, sub_console: Optional[Console] = None
+    config_file_name: Path,
+    get_secret: Callable[[str, str], str],
+    sub_console: Optional[Console] = None,
 ) -> tuple[Production, dict]:
 
     config = load_config(config_file_name)
@@ -35,6 +36,6 @@ def production_from_config(
 
     production_module = importlib.import_module(production_module_name, package=None)
 
-    production = production_module.make_production(config, sub_console)
+    production = production_module.make_production(config, get_secret, sub_console)
 
     return production, config

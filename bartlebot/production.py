@@ -1,7 +1,6 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, Callable
 
 import logging
-import os
 from pathlib import Path
 from rich.console import Console
 
@@ -73,7 +72,9 @@ class BartlebotProduction(Production):
 
 
 def make_production(
-    config: Dict, console: Optional[Console] = None
+    config: Dict,
+    get_secret: Callable[[str, str], str],
+    console: Optional[Console] = None,
 ) -> BartlebotProduction:
 
     production_config = config.get("production", {})
@@ -87,14 +88,14 @@ def make_production(
     law_library_config = scenes_config.get("law_library", {})
 
     return BartlebotProduction(
-        slack_config.get("admin_channel_id", os.environ.get("SLACK_ADMIN_CHANNEL_ID")),
+        slack_config.get("admin_channel_id", get_secret("SLACK_ADMIN_CHANNEL_ID")),
         law_library_config["channel"],
         enrichments_config["docs_per_dataset"],
         Path(enrichments_config["jsonl_file"]),
         inference_config["delay"],
-        graph_config.get("neo4j_uri", os.environ.get("NEO4J_URI")),
-        graph_config.get("neo4j_username", os.environ.get("NEO4J_USERNAME")),
-        graph_config.get("neo4j_password", os.environ.get("NEO4J_PASSWORD")),
+        graph_config.get("neo4j_uri", get_secret("NEO4J_URI")),
+        graph_config.get("neo4j_username", get_secret("NEO4J_USERNAME")),
+        graph_config.get("neo4j_password", get_secret("NEO4J_PASSWORD")),
         vectors_config["milvus_uri"],
         vectors_config["embedding_model"],
         inference_config["extraction_model"],

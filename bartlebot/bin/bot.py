@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 import logging
 import typer
@@ -34,12 +35,6 @@ logging.basicConfig(
     level=logging.WARNING,
 )
 
-logging.basicConfig(
-    stream=sys.stdout,
-    format="%(asctime)s  %(levelname)-8s %(name)s: %(message)s",
-    level=logging.WARNING,
-)
-
 default_config_path = Path("bartlebot.yml")
 
 app = typer.Typer(help="Bartlebot")
@@ -66,7 +61,9 @@ def build(
 
     console.print(header())
 
-    production, config = production_from_config(config_file, sub_console=sub_console)
+    production, config = production_from_config(
+        config_file, os.environ.get, sub_console=sub_console
+    )
 
     console.print("Building all resources")
     production.prepare_props()
@@ -101,7 +98,9 @@ def handle(
     from bartlebot.scenes.law_library.query_handler import user_prompt
     from bartlebot.scenes.law_library.query_handler import default_question
 
-    production, config = production_from_config(config_file, sub_console=sub_console)
+    production, config = production_from_config(
+        config_file, os.environ.get, sub_console=sub_console
+    )
 
     while True:
 
@@ -148,7 +147,9 @@ def slack(
 
     console.print(header())
 
-    production, config = production_from_config(config_file, sub_console)
+    production, config = production_from_config(
+        config_file, os.environ.get, sub_console
+    )
 
     console.print("Preparing props...")
     production.prepare_props()
