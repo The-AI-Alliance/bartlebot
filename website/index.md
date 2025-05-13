@@ -19,13 +19,10 @@ See the [Bartlebot repository](https://github.com/The-AI-Alliance/bartlebot) on 
 
 ## Quickstart (on Google Colab)
 
-To be guided through installation, configuration, data build, message handling, and attaching to chat server:
-
+To be guided through installation, configuration, data build, message handling, and attaching to chat server
 <a target="_blank" href="https://colab.research.google.com/github/The-AI-Alliance/bartlebot/blob/main/notebooks/LawLibrarian.ipynb">
 <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
-
-<br clear="left"/>
 
 ## Quickstart (Running Locally)
 
