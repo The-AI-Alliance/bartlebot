@@ -88,7 +88,7 @@ def make_production(
     law_library_config = scenes_config.get("law_library", {})
 
     return BartlebotProduction(
-        slack_config.get("admin_channel_id", get_secret("SLACK_ADMIN_CHANNEL_ID")),
+        slack_config.get("admin_channel", get_secret("SLACK_ADMIN_CHANNEL_ID")),
         law_library_config["channel"],
         enrichments_config["docs_per_dataset"],
         Path(enrichments_config["jsonl_file"]),
