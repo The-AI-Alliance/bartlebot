@@ -1,29 +1,39 @@
-[tool.poetry]
-name = "bartlebot"
-version = "0.0.1"
-description = "Legal AI Agent for Case Law"
-authors = ["Adam Pingel <oss@pingel.org>"]
-license = "ASFv2"
-readme = "README.md"
-packages = [{include = "bartlebot"}]
-
-[tool.poetry.dependencies]
-python = "^3.11"
-proscenium = "^0.0.9"
-rich = "^13.9.4"
-typer = "^0.15.2"
-pymilvus = {version = "^2.5.4"}
-pymilvus_model = {version = "^0.3.1"}
-neo4j = "^5.28.1"
-gofannon = "^0.25.13"
-eyecite = "^2.6.11"
-
-[tool.poetry.extras]
-testing = ["pytest"]
-
-[tool.poetry.scripts]
-bartlebot = "bartlebot.bin.bot:app"
-
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = [
+  "setuptools>=68",
+  "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bartlebot"
+version = "0.0.2"
+description = "Legal AI Agent for Case Law"
+authors = [{ name = "Adam Pingel", email = "oss@pingel.org" }]
+license = "Apache-2.0"
+readme = "README.md"
+requires-python = ">=3.11"
+
+
+dependencies = [
+  "aisuite>=0.1.10",
+  "docstring_parser>=0.16",
+  "pydantic>=2.10.6",
+  "rich>=13.9.4",
+  "typer>=0.15.2",
+  "neo4j>=5.28.1",
+  "lapidarist>=0.0.2"
+  "slack_sdk>=3.35.0"
+  "proscenium>=0.0.11",
+  "eyecite>=2.6.11"
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8,<9",
+  "pytest-cov>=5,<6",
+  "click>=8.2.0",
+]
+
+[project.scripts]
+bartlebot = "bartlebot.bin.bot:app"
