@@ -8,7 +8,7 @@ from rich.table import Table
 from neo4j import GraphDatabase
 from neo4j import Driver
 
-from proscenium.patterns.knowledge_graph import load_knowledge_graph
+from lapidarist.patterns.knowledge_graph import load_knowledge_graph
 from proscenium.core import Prop
 
 from .doc_enrichments import LegalOpinionEnrichments

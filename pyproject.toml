@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "bartlebot"
 version = "0.0.1"
-description = "Legal Agent Demonstration"
+description = "Legal AI Agent for Case Law"
 authors = ["Adam Pingel <oss@pingel.org>"]
 license = "ASFv2"
 readme = "README.md"
@@ -9,7 +9,7 @@ packages = [{include = "bartlebot"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-proscenium = "^0.0.8"
+proscenium = "^0.0.9"
 rich = "^13.9.4"
 typer = "^0.15.2"
 pymilvus = {version = "^2.5.4"}

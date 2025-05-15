@@ -9,14 +9,15 @@ from pydantic import BaseModel, Field
 from neo4j import Driver
 from eyecite import get_citations
 
+from lapidarist.verbs.extract import partial_formatter
+from lapidarist.verbs.extract import extraction_system_prompt
+from lapidarist.verbs.extract import raw_extraction_template
+from lapidarist.verbs.vector_database import vector_db
+
 from proscenium.core import Character
 from proscenium.core import control_flow_system_prompt
 from proscenium.core import WantsToHandleResponse
-from proscenium.verbs.extract import partial_formatter
-from proscenium.verbs.extract import extraction_system_prompt
-from proscenium.verbs.extract import raw_extraction_template
 from proscenium.verbs.complete import complete_simple
-from proscenium.verbs.vector_database import vector_db
 from proscenium.patterns.graph_rag import query_to_prompts
 
 from .docs import retrieve_document

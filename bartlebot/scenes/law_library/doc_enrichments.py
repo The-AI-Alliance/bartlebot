@@ -10,10 +10,10 @@ from langchain_core.documents.base import Document
 from eyecite import get_citations
 from eyecite.models import CitationBase
 
-from proscenium.verbs.extract import partial_formatter
-from proscenium.verbs.extract import raw_extraction_template
-from proscenium.patterns.document_enricher import extract_from_document_chunks
-from proscenium.patterns.document_enricher import enrich_documents
+from lapidarist.verbs.extract import partial_formatter
+from lapidarist.verbs.extract import raw_extraction_template
+from lapidarist.patterns.document_enricher import extract_from_document_chunks
+from lapidarist.patterns.document_enricher import enrich_documents
 
 from proscenium.core import Prop
 

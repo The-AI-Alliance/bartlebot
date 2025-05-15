@@ -5,7 +5,7 @@ from rich.panel import Panel
 from langchain_core.documents.base import Document
 from neo4j import Driver
 
-from proscenium.verbs.read import load_hugging_face_dataset
+from lapidarist.verbs.read import load_hugging_face_dataset
 
 log = logging.getLogger(__name__)
 
