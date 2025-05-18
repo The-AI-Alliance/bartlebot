@@ -17,10 +17,13 @@ from neomodel import (
     RelationshipFrom,
     ZeroOrOne,
     ZeroOrMore,
-    One,
 )
 
-from lapidarist.patterns.knowledge_graph import load_knowledge_graph
+from lapidarist.patterns.knowledge_graph import (
+    load_knowledge_graph,
+    Reference,
+    RelationLabel as lapidarist_RelationLabel,
+)
 from proscenium.core import Prop
 
 from .doc_enrichments import LegalOpinionEnrichments
@@ -29,8 +32,6 @@ log = logging.getLogger(__name__)
 
 
 class RelationLabel(StrEnum):
-    MENTIONS = "MENTIONS"
-    REFERS_TO = "REFERS_TO"
     AUTHORED_BY = "AUTHORED_BY"
 
 
@@ -43,14 +44,6 @@ class NodeLabel(StrEnum):
     JUDGE_REFERENCE = "JudgeReference"
     GEO_REFERENCE = "GeoReference"
     COMPANY_REFERENCE = "CompanyReference"
-
-
-class Reference(StructuredNode):
-    uid = UniqueIdProperty()
-    referer = RelationshipFrom(StructuredNode, RelationLabel.MENTIONS, cardinality=One)
-    text = StringProperty(required=True)
-    # confidence = StringProperty(default="0.0")
-    # referent = RelationshipTo(_, RelationLabel.REFERS_TO, cardinality=ZeroOrOne)
 
 
 class Case(StructuredNode):
@@ -73,19 +66,29 @@ class Case(StructuredNode):
         NodeLabel.JUDGE_REFERENCE, RelationLabel.AUTHORED_BY, cardinality=ZeroOrMore
     )
     referred_to_by = RelationshipFrom(
-        NodeLabel.CASE_REFERENCE, RelationLabel.REFERS_TO, cardinality=ZeroOrMore
+        NodeLabel.CASE_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
     )
     judge_mentions = RelationshipTo(
-        NodeLabel.JUDGE_REFERENCE, RelationLabel.MENTIONS, cardinality=ZeroOrMore
+        NodeLabel.JUDGE_REFERENCE,
+        lapidarist_RelationLabel.MENTIONS,
+        cardinality=ZeroOrMore,
     )
     case_mentions = RelationshipTo(
-        NodeLabel.CASE_REFERENCE, RelationLabel.MENTIONS, cardinality=ZeroOrMore
+        NodeLabel.CASE_REFERENCE,
+        lapidarist_RelationLabel.MENTIONS,
+        cardinality=ZeroOrMore,
     )
     geo_mentions = RelationshipTo(
-        NodeLabel.GEO_REFERENCE, RelationLabel.MENTIONS, cardinality=ZeroOrMore
+        NodeLabel.GEO_REFERENCE,
+        lapidarist_RelationLabel.MENTIONS,
+        cardinality=ZeroOrMore,
     )
     company_mentions = RelationshipTo(
-        NodeLabel.COMPANY_REFERENCE, RelationLabel.MENTIONS, cardinality=ZeroOrMore
+        NodeLabel.COMPANY_REFERENCE,
+        lapidarist_RelationLabel.MENTIONS,
+        cardinality=ZeroOrMore,
     )
 
 
@@ -93,7 +96,9 @@ class Judge(StructuredNode):
     uid = UniqueIdProperty()
     name = StringProperty(unique_index=True, required=True)
     referred_to_by = RelationshipFrom(
-        NodeLabel.JUDGE_REFERENCE, RelationLabel.REFERS_TO, cardinality=ZeroOrMore
+        NodeLabel.JUDGE_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
     )
 
 
@@ -101,7 +106,9 @@ class Geo(StructuredNode):
     uid = UniqueIdProperty()
     name = StringProperty(required=True)
     referred_to_by = RelationshipFrom(
-        NodeLabel.GEO_REFERENCE, RelationLabel.REFERS_TO, cardinality=ZeroOrMore
+        NodeLabel.GEO_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
     )
 
 
@@ -109,35 +116,53 @@ class Company(StructuredNode):
     uid = UniqueIdProperty()
     name = StringProperty(required=True)
     referred_to_by = RelationshipFrom(
-        NodeLabel.COMPANY_REFERENCE, RelationLabel.REFERS_TO, cardinality=ZeroOrMore
+        NodeLabel.COMPANY_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
     )
 
 
 class CaseReference(Reference):
-    referent = RelationshipTo(Case, RelationLabel.REFERS_TO, cardinality=ZeroOrOne)
+    referent = RelationshipTo(
+        Case, lapidarist_RelationLabel.REFERS_TO, cardinality=ZeroOrOne
+    )
     referred_to_by = RelationshipFrom(
-        NodeLabel.CASE_REFERENCE, RelationLabel.REFERS_TO, cardinality=ZeroOrMore
+        NodeLabel.CASE_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
     )
 
 
 class JudgeReference(Reference):
-    referent = RelationshipTo(Judge, RelationLabel.REFERS_TO, cardinality=ZeroOrOne)
+    referent = RelationshipTo(
+        Judge, lapidarist_RelationLabel.REFERS_TO, cardinality=ZeroOrOne
+    )
     referred_to_by = RelationshipFrom(
-        NodeLabel.JUDGE_REFERENCE, RelationLabel.REFERS_TO, cardinality=ZeroOrMore
+        NodeLabel.JUDGE_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
     )
 
 
 class GeoReference(Reference):
-    referent = RelationshipTo(Geo, RelationLabel.REFERS_TO, cardinality=ZeroOrOne)
+    referent = RelationshipTo(
+        Geo, lapidarist_RelationLabel.REFERS_TO, cardinality=ZeroOrOne
+    )
     referred_to_by = RelationshipFrom(
-        NodeLabel.GEO_REFERENCE, RelationLabel.REFERS_TO, cardinality=ZeroOrMore
+        NodeLabel.GEO_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
     )
 
 
 class CompanyReference(Reference):
-    referent = RelationshipTo(Company, RelationLabel.REFERS_TO, cardinality=ZeroOrOne)
+    referent = RelationshipTo(
+        Company, lapidarist_RelationLabel.REFERS_TO, cardinality=ZeroOrOne
+    )
     referred_to_by = RelationshipFrom(
-        NodeLabel.COMPANY_REFERENCE, RelationLabel.REFERS_TO, cardinality=ZeroOrMore
+        NodeLabel.COMPANY_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
     )
 
 
