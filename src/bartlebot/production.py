@@ -21,6 +21,7 @@ class BartlebotProduction(Production):
         self,
         admin_channel_id: str,
         legal_channel_name: str,
+        hf_dataset_ids: list[str],
         docs_per_dataset: int,
         enrichment_jsonl_file: Path,
         delay: float,
@@ -39,6 +40,7 @@ class BartlebotProduction(Production):
         self.law_library = law_library.LawLibrary(
             admin_channel_id,
             legal_channel_name,
+            hf_dataset_ids,
             docs_per_dataset,
             enrichment_jsonl_file,
             delay,
@@ -90,6 +92,7 @@ def make_production(
     return BartlebotProduction(
         slack_config.get("admin_channel", get_secret("SLACK_ADMIN_CHANNEL_ID")),
         law_library_config["channel"],
+        law_library_config["hf_datasets"],
         enrichments_config["docs_per_dataset"],
         Path(enrichments_config["jsonl_file"]),
         inference_config["delay"],

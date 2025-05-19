@@ -5,10 +5,25 @@ from enum import StrEnum
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
+
 from neo4j import GraphDatabase
 from neo4j import Driver
+from neomodel import (
+    StructuredNode,
+    StringProperty,
+    IntegerProperty,
+    UniqueIdProperty,
+    RelationshipTo,
+    RelationshipFrom,
+    ZeroOrOne,
+    ZeroOrMore,
+)
 
-from lapidarist.patterns.knowledge_graph import load_knowledge_graph
+from lapidarist.patterns.knowledge_graph import (
+    load_knowledge_graph,
+    Reference,
+    RelationLabel as lapidarist_RelationLabel,
+)
 from proscenium.core import Prop
 
 from .doc_enrichments import LegalOpinionEnrichments
@@ -16,72 +31,145 @@ from .doc_enrichments import LegalOpinionEnrichments
 log = logging.getLogger(__name__)
 
 
-class NodeLabel(StrEnum):
-    Case = "Case"
-    CaseRef = "CaseRef"
-    JudgeRef = "JudgeRef"
-    Judge = "Judge"
-    GeoRef = "GeoRef"
-    CompanyRef = "CompanyRef"
-
-
 class RelationLabel(StrEnum):
-    mentions = "mentions"
-    references = "references"
+    AUTHORED_BY = "AUTHORED_BY"
 
 
-# TODO `ReferenceSchema` may move to `proscenium.patterns.knowledge_graph`
-# depending on how much potentially resuable behavior is built around it
+class NodeLabel(StrEnum):
+    CASE = "Case"
+    JUDGE = "Judge"
+    GEO = "Geo"
+    COMPANY = "Company"
+    CASE_REFERENCE = "CaseReference"
+    JUDGE_REFERENCE = "JudgeReference"
+    GEO_REFERENCE = "GeoReference"
+    COMPANY_REFERENCE = "CompanyReference"
 
 
-class ReferenceSchema:
-    """
-    A `ReferenceSchema` is a way of denoting the text span used to establish
-    a relationship between two nodes in the knowledge graph.
-    """
+class Case(StructuredNode):
+    uid = UniqueIdProperty()
+    cited_as = StringProperty()
 
-    # (mentioner) -> [:mentions] -> (ref)
-    # (ref) -> [:references] -> (referent)
+    name = StringProperty(required=True)
+    reporter = StringProperty()
+    volume = StringProperty()
+    first_page = StringProperty()
+    last_page = StringProperty()
+    court = StringProperty()
+    decision_date = StringProperty()
+    docket_number = StringProperty()
+    jurisdiction = StringProperty()
+    hf_dataset_id = StringProperty()
+    hf_dataset_index = IntegerProperty()
 
-    # All fields refer to node labels
-    def __init__(self, mentioners: list[str], ref_label: str, referent: str):
-        self.mentioners = mentioners
-        self.ref_label = ref_label
-        self.referent = referent
+    authored_by = RelationshipTo(
+        NodeLabel.JUDGE_REFERENCE, RelationLabel.AUTHORED_BY, cardinality=ZeroOrMore
+    )
+    referred_to_by = RelationshipFrom(
+        NodeLabel.CASE_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
+    )
+    judge_mentions = RelationshipTo(
+        NodeLabel.JUDGE_REFERENCE,
+        lapidarist_RelationLabel.MENTIONS,
+        cardinality=ZeroOrMore,
+    )
+    case_mentions = RelationshipTo(
+        NodeLabel.CASE_REFERENCE,
+        lapidarist_RelationLabel.MENTIONS,
+        cardinality=ZeroOrMore,
+    )
+    geo_mentions = RelationshipTo(
+        NodeLabel.GEO_REFERENCE,
+        lapidarist_RelationLabel.MENTIONS,
+        cardinality=ZeroOrMore,
+    )
+    company_mentions = RelationshipTo(
+        NodeLabel.COMPANY_REFERENCE,
+        lapidarist_RelationLabel.MENTIONS,
+        cardinality=ZeroOrMore,
+    )
 
 
-judge_ref = ReferenceSchema(
-    [NodeLabel.Case],
-    NodeLabel.JudgeRef,
-    NodeLabel.Judge,
-)
-
-case_ref = ReferenceSchema(
-    [NodeLabel.Case],
-    NodeLabel.CaseRef,
-    NodeLabel.Case,
-)
+class Judge(StructuredNode):
+    uid = UniqueIdProperty()
+    name = StringProperty(unique_index=True, required=True)
+    referred_to_by = RelationshipFrom(
+        NodeLabel.JUDGE_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
+    )
 
 
-def doc_enrichments_to_graph(tx, enrichments: LegalOpinionEnrichments) -> None:
-    """
-    See https://neo4j.com/docs/cypher-manual/current/clauses/merge/ for
-    Cypher semantics of MERGE.
-    """
+class Geo(StructuredNode):
+    uid = UniqueIdProperty()
+    name = StringProperty(required=True)
+    referred_to_by = RelationshipFrom(
+        NodeLabel.GEO_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
+    )
 
-    case_name = enrichments.name
 
-    tx.run(
-        "MERGE (c:Case {"
-        + "name: $case, "
-        + "reporter: $reporter, volume: $volume, "
-        + "first_page: $first_page, last_page: $last_page, "
-        + "cited_as: $cited_as, "
-        + "court: $court, decision_date: $decision_date, "
-        + "docket_number: $docket_number, jurisdiction: $jurisdiction, "
-        + "hf_dataset_id: $hf_dataset_id, hf_dataset_index: $hf_dataset_index"
-        + "})",
-        case=case_name,
+class Company(StructuredNode):
+    uid = UniqueIdProperty()
+    name = StringProperty(required=True)
+    referred_to_by = RelationshipFrom(
+        NodeLabel.COMPANY_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
+    )
+
+
+class CaseReference(Reference):
+    referent = RelationshipTo(
+        Case, lapidarist_RelationLabel.REFERS_TO, cardinality=ZeroOrOne
+    )
+    referred_to_by = RelationshipFrom(
+        NodeLabel.CASE_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
+    )
+
+
+class JudgeReference(Reference):
+    referent = RelationshipTo(
+        Judge, lapidarist_RelationLabel.REFERS_TO, cardinality=ZeroOrOne
+    )
+    referred_to_by = RelationshipFrom(
+        NodeLabel.JUDGE_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
+    )
+
+
+class GeoReference(Reference):
+    referent = RelationshipTo(
+        Geo, lapidarist_RelationLabel.REFERS_TO, cardinality=ZeroOrOne
+    )
+    referred_to_by = RelationshipFrom(
+        NodeLabel.GEO_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
+    )
+
+
+class CompanyReference(Reference):
+    referent = RelationshipTo(
+        Company, lapidarist_RelationLabel.REFERS_TO, cardinality=ZeroOrOne
+    )
+    referred_to_by = RelationshipFrom(
+        NodeLabel.COMPANY_REFERENCE,
+        lapidarist_RelationLabel.REFERS_TO,
+        cardinality=ZeroOrMore,
+    )
+
+
+def doc_enrichments_to_graph(enrichments: LegalOpinionEnrichments) -> None:
+
+    case_node = Case(
+        name=enrichments.name,
         reporter=enrichments.reporter,
         volume=enrichments.volume,
         first_page=enrichments.first_page,
@@ -93,67 +181,32 @@ def doc_enrichments_to_graph(tx, enrichments: LegalOpinionEnrichments) -> None:
         jurisdiction=enrichments.jurisdiction,
         hf_dataset_id=enrichments.hf_dataset_id,
         hf_dataset_index=enrichments.hf_dataset_index,
-    )
+    ).save()
 
     # Resolvable fields from the document metadata
 
-    # TODO split multiple judges upstream
-    judge = enrichments.judges
+    judge = enrichments.judges  # TODO split multiple judges upstream
     if len(judge) > 0:
-        tx.run(
-            "MATCH (c:Case {name: $case}) "
-            + "MERGE (c)-[:authored_by]->(:JudgeRef {text: $judge, confidence: $confidence})",
-            judge=judge,
-            case=case_name,
-            confidence=0.9,
-        )
+        judge_ref = JudgeReference(text=judge).save()
+        case_node.authored_by.connect(judge_ref)
+
     # TODO split into plaintiff(s) and defendant(s) upstream
-    parties = enrichments.parties
-    tx.run(
-        "MATCH (c:Case {name: $case}) "
-        + "MERGE (c)-[:involves]->(:PartyRef {name: $party, confidence: $confidence})",
-        party=parties,
-        case=case_name,
-        confidence=0.9,
-    )
+    # parties = enrichments.parties
+    # TODO case_node.involves.connect(PartyReference(text=parties))
 
     # Fields extracted from the text with LLM:
 
     for judgeref in enrichments.judgerefs:
-        tx.run(
-            "MATCH (c:Case {name: $case}) "
-            + "MERGE (c)-[:mentions]->(:JudgeRef {text: $judgeref, confidence: $confidence})",
-            judgeref=judgeref,
-            case=case_name,
-            confidence=0.6,
-        )
+        case_node.judge_mentions.connect(JudgeReference(text=judgeref).save())
 
     for caseref in enrichments.caserefs:
-        tx.run(
-            "MATCH (c:Case {name: $case}) "
-            + "MERGE (c)-[:mentions]->(:CaseRef {text: $caseref, confidence: $confidence})",
-            case=case_name,
-            caseref=caseref,
-            confidence=0.6,
-        )
+        case_node.case_mentions.connect(CaseReference(text=caseref).save())
 
     for georef in enrichments.georefs:
-        tx.run(
-            "MATCH (c:Case {name: $case}) "
-            + "MERGE (c)-[:mentions]->(:GeoRef {text: $georef, confidence: $confidence})",
-            case=case_name,
-            georef=georef,
-            confidence=0.6,
-        )
+        case_node.geo_mentions.connect(GeoReference(text=georef).save())
 
     for companyref in enrichments.companyrefs:
-        tx.run(
-            "MATCH (c:Case {name: $case}) "
-            + "MERGE (c)-[:mentions]->(:CompanyRef {text: $companyref, confidence: $confidence})",
-            case=case_name,
-            companyref=companyref,
-            confidence=0.6,
-        )
+        case_node.company_mentions.connect(CompanyReference(text=companyref).save())
 
 
 class CaseLawKnowledgeGraph(Prop):

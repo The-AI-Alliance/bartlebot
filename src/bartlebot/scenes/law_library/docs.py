@@ -11,14 +11,12 @@ log = logging.getLogger(__name__)
 
 topic = "US Caselaw"
 
-# hf_dataset_ids = ["free-law/nh", "free-law/Caselaw_Access_Project"]
-hf_dataset_ids = ["free-law/nh"]
-# Early version looked at only: free-law/nh ids {'4440632', '4441078'}
-
 hf_dataset_column = "text"
 
 
-def retrieve_documents(docs_per_dataset: int = None) -> List[Document]:
+def retrieve_documents(
+    hf_dataset_ids: list[str], docs_per_dataset: int = None
+) -> List[Document]:
 
     docs = []
 
@@ -47,10 +45,12 @@ def retrieve_documents(docs_per_dataset: int = None) -> List[Document]:
     return docs
 
 
-def retriever(docs_per_dataset: int) -> Callable[[], List[Document]]:
+def retriever(
+    hf_dataset_ids: list[str], docs_per_dataset: int
+) -> Callable[[], List[Document]]:
 
     def retrieve_documents_fn() -> List[Document]:
-        return retrieve_documents(docs_per_dataset)
+        return retrieve_documents(hf_dataset_ids, docs_per_dataset)
 
     return retrieve_documents_fn
 

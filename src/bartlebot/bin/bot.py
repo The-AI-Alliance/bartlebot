@@ -32,6 +32,7 @@ def build(
         default=default_config_path,
         help="Path to the configuration file.",
     ),
+    force: bool = False,
     verbose: bool = False,
 ):
     console = Console()
@@ -50,7 +51,7 @@ def build(
     )
 
     console.print("Building all resources")
-    production.prepare_props()
+    production.prepare_props(force_rebuild=force)
     console.print("Done.)")
 
     production.curtain()

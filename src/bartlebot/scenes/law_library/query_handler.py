@@ -7,6 +7,7 @@ from rich.panel import Panel
 from uuid import UUID
 from pydantic import BaseModel, Field
 from neo4j import Driver
+from neomodel import db, Q
 from eyecite import get_citations
 
 from lapidarist.verbs.extract import partial_formatter
@@ -153,16 +154,17 @@ def query_extract_to_context(
         caserefs = get_citations(query)
 
         case_judgeref_clauses = []
+
         if qe is not None:
+            # TODO judgeref_match = find_matching_objects(vector_db_client, judgeref, judge_resolver)
             case_judgeref_clauses = [
-                # TODO judgeref_match = find_matching_objects(vector_db_client, judgeref, judge_resolver)
-                f"MATCH (c:Case)-[:mentions]->(:JudgeRef {{text: '{judgeref}'}})"
+                f"MATCH (c:Case)-[:MENTIONS]->(:JudgeReference {{text: '{judgeref}'}})"
                 for judgeref in qe.judge_names
             ]
 
         case_caseref_clauses = [
             # TODO caseref_match = find_matching_objects(vector_db_client, caseref, case_resolver)
-            f"MATCH (c:Case)-[:mentions]->(:CaseRef {{text: '{caseref.matched_text()}'}})"
+            f"MATCH (c:Case)-[:MENTIONS]->(:CaseReference {{text: '{caseref.matched_text()}'}})"
             for caseref in caserefs
         ]
 
@@ -176,6 +178,8 @@ def query_extract_to_context(
 
         if console is not None:
             console.print(Panel(cypher, title="Cypher Query"))
+
+        log.info("Cypher query: %s", cypher)
 
         case_names = []
         with driver.session() as session:
@@ -235,6 +239,7 @@ class LawLibrarian(Character):
     ):
         super().__init__(admin_channel_id=admin_channel_id)
         self.driver = driver
+        db.set_connection(driver=driver)
         self.milvus_uri = milvus_uri
         self.query_extraction_model_id = query_extraction_model_id
         self.control_flow_model_id = control_flow_model_id
