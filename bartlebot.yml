@@ -4,6 +4,8 @@ production:
   scenes:
     law_library:
       channel: legal
+      hf_datasets:
+        - "free-law/nh"
 
 inference:
   generator_model: "together:meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"

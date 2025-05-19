@@ -25,6 +25,7 @@ class LawLibrary(Scene):
         self,
         admin_channel_id: str,
         channel_id_legal: str,
+        hf_dataset_ids: list[str],
         docs_per_dataset: int,
         enrichment_jsonl_file: Path,
         delay: float,
@@ -41,6 +42,7 @@ class LawLibrary(Scene):
         super().__init__()
         self.admin_channel_id = admin_channel_id
         self.channel_id_legal = channel_id_legal
+        self.hf_dataset_ids = hf_dataset_ids
         self.docs_per_dataset = docs_per_dataset
         self.enrichment_jsonl_file = enrichment_jsonl_file
         self.delay = delay
@@ -54,7 +56,12 @@ class LawLibrary(Scene):
         self.console = console
 
         self.doc_enrichments = DocumentEnrichments(
-            docs_per_dataset, enrichment_jsonl_file, extraction_model_id, delay, console
+            hf_dataset_ids,
+            docs_per_dataset,
+            enrichment_jsonl_file,
+            extraction_model_id,
+            delay,
+            console,
         )
 
         self.case_law_knowledge_graph = CaseLawKnowledgeGraph(

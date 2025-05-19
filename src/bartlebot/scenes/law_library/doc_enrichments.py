@@ -164,6 +164,7 @@ class DocumentEnrichments(Prop):
 
     def __init__(
         self,
+        hf_dataset_ids: List[str],
         docs_per_dataset: int,
         output: Path,
         extraction_model_id: str,
@@ -171,6 +172,7 @@ class DocumentEnrichments(Prop):
         console: Optional[Console] = None,
     ):
         super().__init__(console)
+        self.hf_dataset_ids = hf_dataset_ids
         self.docs_per_dataset = docs_per_dataset
         self.output = output
         self.extraction_model_id = extraction_model_id
@@ -194,7 +196,7 @@ class DocumentEnrichments(Prop):
         )
 
         enrich_documents(
-            retriever(self.docs_per_dataset),
+            retriever(self.hf_dataset_ids, self.docs_per_dataset),
             extract_from_opinion_chunks,
             doc_enrichments,
             self.output,
