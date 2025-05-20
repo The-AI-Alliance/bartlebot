@@ -5,9 +5,10 @@ from enum import StrEnum
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
+from rich.panel import Panel
 
 from neo4j import GraphDatabase
-from neo4j import Driver
+
 from neomodel import (
     StructuredNode,
     StringProperty,
@@ -18,6 +19,7 @@ from neomodel import (
     ZeroOrOne,
     ZeroOrMore,
 )
+from neo4j_graphrag.schema import get_schema
 
 from lapidarist.patterns.knowledge_graph import (
     load_knowledge_graph,
@@ -266,83 +268,60 @@ class CaseLawKnowledgeGraph(Prop):
         finally:
             driver.close()
 
+    def display_knowledge_graph(self) -> None:
 
-def display_knowledge_graph(driver: Driver, console: Console) -> None:
+        if self.console is None:
+            log.error("No console provided for displaying the knowledge graph.")
+            return
 
-    with driver.session() as session:
-
-        node_types_result = session.run("MATCH (n) RETURN labels(n) AS nls")
-        node_types = set()
-        for record in node_types_result:
-            node_types.update(record["nls"])
-        ntt = Table(title="Node Types", show_lines=False)
-        ntt.add_column("Type", justify="left")
-        for nt in node_types:
-            ntt.add_row(nt)
-        console.print(ntt)
-
-        relations_types_result = session.run("MATCH ()-[r]->() RETURN type(r) AS rel")
-        relation_types = [record["rel"] for record in relations_types_result]
-        unique_relations = list(set(relation_types))
-        rtt = Table(title="Relationship Types", show_lines=False)
-        rtt.add_column("Type", justify="left")
-        for rt in unique_relations:
-            rtt.add_row(rt)
-        console.print(rtt)
-
-        cases_result = session.run("MATCH (n:Case) RETURN properties(n) AS p")
-        cases_table = Table(title="Cases", show_lines=False)
-        cases_table.add_column("Properties", justify="left")
-        for case_record in cases_result:
-            cases_table.add_row(str(case_record["p"]))
-        console.print(cases_table)
-
-        judgerefs_result = session.run("MATCH (n:JudgeRef) RETURN n.text AS text")
-        judgerefs_table = Table(title="JudgeRefs", show_lines=False)
-        judgerefs_table.add_column("Text", justify="left")
-        for judgeref_record in judgerefs_result:
-            judgerefs_table.add_row(judgeref_record["text"])
-        console.print(judgerefs_table)
-
-        caserefs_result = session.run("MATCH (n:CaseRef) RETURN n.text AS text")
-        caserefs_table = Table(title="CaseRefs", show_lines=False)
-        caserefs_table.add_column("Text", justify="left")
-        for caseref_record in caserefs_result:
-            caserefs_table.add_row(caseref_record["text"])
-        console.print(caserefs_table)
-
-        georefs_result = session.run("MATCH (n:GeoRef) RETURN n.text AS text")
-        georefs_table = Table(title="GeoRefs", show_lines=False)
-        georefs_table.add_column("Text", justify="left")
-        for georef_record in georefs_result:
-            georefs_table.add_row(georef_record["text"])
-        console.print(georefs_table)
-
-        companyrefs_result = session.run("MATCH (n:CompanyRef) RETURN n.text AS text")
-        companyrefs_table = Table(title="CompanyRefs", show_lines=False)
-        companyrefs_table.add_column("Text", justify="left")
-        for companyref_record in companyrefs_result:
-            companyrefs_table.add_row(companyref_record["text"])
-        console.print(companyrefs_table)
-
-
-class CaseLawKnowledgeGraphDisplayer(Prop):
-
-    def __init__(
-        self,
-        neo4j_uri: str,
-        neo4j_username: str,
-        neo4j_password: str,
-        console: Optional[Console] = None,
-    ):
-        super().__init__(console=console)
-        self.neo4j_uri = neo4j_uri
-        self.neo4j_username = neo4j_username
-        self.neo4j_password = neo4j_password
-
-    def build(self, force: bool = False):
         driver = GraphDatabase.driver(
             self.neo4j_uri, auth=(self.neo4j_username, self.neo4j_password)
         )
-        display_knowledge_graph(driver, self.console)
+
+        with driver.session() as session:
+
+            schema = get_schema(driver)
+            self.console.print(Panel(schema, title="Graph Schema"))
+
+            cases_result = session.run("MATCH (n:Case) RETURN properties(n) AS p")
+            cases_table = Table(title="Cases", show_lines=False)
+            cases_table.add_column("Properties", justify="left")
+            for case_record in cases_result:
+                cases_table.add_row(str(case_record["p"]))
+            self.console.print(cases_table)
+
+            caserefs_result = session.run(
+                "MATCH (n:CaseReference) RETURN n.text AS text"
+            )
+            caserefs_table = Table(title="CaseReference", show_lines=False)
+            caserefs_table.add_column("Text", justify="left")
+            for caseref_record in caserefs_result:
+                caserefs_table.add_row(caseref_record["text"])
+            self.console.print(caserefs_table)
+
+            judgerefs_result = session.run(
+                "MATCH (n:JudgeReference) RETURN n.text AS text"
+            )
+            judgerefs_table = Table(title="JudgeReferences", show_lines=False)
+            judgerefs_table.add_column("Text", justify="left")
+            for judgeref_record in judgerefs_result:
+                judgerefs_table.add_row(judgeref_record["text"])
+            self.console.print(judgerefs_table)
+
+            georefs_result = session.run("MATCH (n:GeoReference) RETURN n.text AS text")
+            georefs_table = Table(title="GeoReferences", show_lines=False)
+            georefs_table.add_column("Text", justify="left")
+            for georef_record in georefs_result:
+                georefs_table.add_row(georef_record["text"])
+            self.console.print(georefs_table)
+
+            companyrefs_result = session.run(
+                "MATCH (n:CompanyReference) RETURN n.text AS text"
+            )
+            companyrefs_table = Table(title="CompanyReferences", show_lines=False)
+            companyrefs_table.add_column("Text", justify="left")
+            for companyref_record in companyrefs_result:
+                companyrefs_table.add_row(companyref_record["text"])
+            self.console.print(companyrefs_table)
+
         driver.close()

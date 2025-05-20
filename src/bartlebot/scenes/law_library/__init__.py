@@ -92,6 +92,7 @@ class LawLibrary(Scene):
             extraction_model_id,
             generator_model_id,
             admin_channel_id,
+            console,
         )
 
     def props(self) -> list[Prop]:

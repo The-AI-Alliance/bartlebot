@@ -140,6 +140,8 @@ def slack(
     production.prepare_props()
     console.print("Props are up-to-date.")
 
+    production.law_library.case_law_knowledge_graph.display_knowledge_graph()
+
     slack_main(production, config, console)
 
 
