@@ -3,7 +3,7 @@ from typing import List, Optional, Callable
 import logging
 from rich.panel import Panel
 from langchain_core.documents.base import Document
-from neo4j import Driver
+
 
 from lapidarist.verbs.read import load_hugging_face_dataset
 
@@ -55,27 +55,16 @@ def retriever(
     return retrieve_documents_fn
 
 
-def retrieve_document(id: str, driver: Driver) -> Optional[Document]:
+def retrieve_document(hf_dataset_id: str, index: int) -> Optional[Document]:
 
-    with driver.session() as session:
-        result = session.run("MATCH (c: Case {name: $name}) RETURN c", name=id)
+    docs = load_hugging_face_dataset(
+        hf_dataset_id, page_content_column=hf_dataset_column
+    )
 
-        head = result.single()["c"]
-        if head is None:
-            log.error("retrieve_document: no results for id %s", id)
-            return None
-
-        hf_dataset_id = head["hf_dataset_id"]
-        index = int(head["hf_dataset_index"])
-
-        docs = load_hugging_face_dataset(
-            hf_dataset_id, page_content_column=hf_dataset_column
-        )
-
-        if 0 <= index < len(docs):
-            return docs[index]
-        else:
-            return None
+    if 0 <= index < len(docs):
+        return docs[index]
+    else:
+        return None
 
 
 case_template = """
