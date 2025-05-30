@@ -26,7 +26,7 @@ dependencies = [
   "neo4j_graphrag>=1.6.1",
   "lapidarist>=0.0.3",
   "slack_sdk>=3.35.0",
-  "proscenium>=0.0.11",
+  "proscenium>=0.0.12",
   "eyecite>=2.6.11"
 ]
 
