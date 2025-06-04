@@ -3,6 +3,7 @@ from typing import Dict, Optional, Callable
 import logging
 from pathlib import Path
 from rich.console import Console
+from aisuite import Client as AISuiteClient
 
 from proscenium.core import Production
 from proscenium.core import Character
@@ -22,7 +23,9 @@ class BartlebotProduction(Production):
         admin_channel_id: str,
         legal_channel_name: str,
         hf_dataset_ids: list[str],
+        hf_dataset_column: str,
         docs_per_dataset: int,
+        chat_completion_client: AISuiteClient,
         enrichment_jsonl_file: Path,
         delay: float,
         neo4j_uri: str,
@@ -37,11 +40,15 @@ class BartlebotProduction(Production):
     ) -> None:
         super().__init__(admin_channel_id, console)
 
+        self.chat_completion_client = chat_completion_client
+
         self.law_library = law_library.LawLibrary(
             admin_channel_id,
             legal_channel_name,
             hf_dataset_ids,
+            hf_dataset_column,
             docs_per_dataset,
+            chat_completion_client,
             enrichment_jsonl_file,
             delay,
             neo4j_uri,
@@ -89,11 +96,24 @@ def make_production(
     scenes_config = production_config.get("scenes", {})
     law_library_config = scenes_config.get("law_library", {})
 
+    aisuite_client = AISuiteClient(
+        provider_configs={
+            "ollama": {
+                "timeout": 180,
+            },
+            "together": {
+                "timeout": 180,
+            },
+        }
+    )
+
     return BartlebotProduction(
         slack_config.get("admin_channel", get_secret("SLACK_ADMIN_CHANNEL_ID")),
         law_library_config["channel"],
         law_library_config["hf_datasets"],
+        law_library_config["hf_dataset_column"],
         enrichments_config["docs_per_dataset"],
+        aisuite_client,
         Path(enrichments_config["jsonl_file"]),
         inference_config["delay"],
         graph_config.get("neo4j_uri", get_secret("NEO4J_URI")),

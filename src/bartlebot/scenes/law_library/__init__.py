@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 from rich.console import Console
 from neo4j import GraphDatabase
+from aisuite import Client as AISuiteClient
 
 from proscenium.core import Prop
 from proscenium.core import Character
@@ -26,7 +27,9 @@ class LawLibrary(Scene):
         admin_channel_id: str,
         channel_id_legal: str,
         hf_dataset_ids: list[str],
+        hf_dataset_column: str,
         docs_per_dataset: int,
+        chat_completion_client: AISuiteClient,
         enrichment_jsonl_file: Path,
         delay: float,
         neo4j_uri: str,
@@ -43,7 +46,9 @@ class LawLibrary(Scene):
         self.admin_channel_id = admin_channel_id
         self.channel_id_legal = channel_id_legal
         self.hf_dataset_ids = hf_dataset_ids
+        self.hf_dataset_column = hf_dataset_column
         self.docs_per_dataset = docs_per_dataset
+        self.chat_completion_client = chat_completion_client
         self.enrichment_jsonl_file = enrichment_jsonl_file
         self.delay = delay
         self.neo4j_uri = neo4j_uri
@@ -57,7 +62,9 @@ class LawLibrary(Scene):
 
         self.doc_enrichments = DocumentEnrichments(
             hf_dataset_ids,
+            hf_dataset_column,
             docs_per_dataset,
+            chat_completion_client,
             enrichment_jsonl_file,
             extraction_model_id,
             delay,
@@ -86,6 +93,7 @@ class LawLibrary(Scene):
         )
 
         self.law_librarian = LawLibrarian(
+            chat_completion_client,
             self.driver,
             milvus_uri,
             control_flow_model_id,

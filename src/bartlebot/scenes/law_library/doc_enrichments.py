@@ -1,24 +1,25 @@
-from typing import List, Optional, Callable
+from typing import List, Optional
 import logging
 from pydantic import BaseModel, Field
 
 from rich.console import Console
-from rich.panel import Panel
+from rich.progress import Progress
 from pathlib import Path
 from langchain_core.documents.base import Document
+from aisuite import Client as AISuiteClient
 
 from eyecite import get_citations
 from eyecite.models import CitationBase
 
-from lapidarist.verbs.extract import partial_formatter
-from lapidarist.verbs.extract import raw_extraction_template
-from lapidarist.patterns.document_enricher import extract_from_document_chunks
-from lapidarist.patterns.document_enricher import enrich_documents
+from lapidarist.read import retrieve_documents
+from lapidarist.extract import partial_formatter
+from lapidarist.extract import raw_extraction_template
+from lapidarist.document_enricher import make_extract_from_document_chunks
+from lapidarist.document_enricher import enrich_document
 
 from proscenium.core import Prop
 
 from .docs import doc_as_rich
-from .docs import retriever
 
 log = logging.getLogger(__name__)
 
@@ -131,32 +132,6 @@ chunk_extraction_template = partial_formatter.format(
 )
 
 
-def make_extract_from_opinion_chunks(
-    doc_as_rich: Callable[[Document], Panel],
-    chunk_extraction_model_id: str,
-    chunk_extraction_template: str,
-    chunk_extract_clazz: type[BaseModel],
-    delay: float = 1.0,  # intra-chunk delay between inference calls
-    console: Optional[Console] = None,
-) -> Callable[[Document, bool], List[BaseModel]]:
-
-    def extract_from_doc_chunks(doc: Document) -> List[BaseModel]:
-
-        chunk_extract_models = extract_from_document_chunks(
-            doc,
-            doc_as_rich,
-            chunk_extraction_model_id,
-            chunk_extraction_template,
-            chunk_extract_clazz,
-            delay,
-            console=console,
-        )
-
-        return chunk_extract_models
-
-    return extract_from_doc_chunks
-
-
 class DocumentEnrichments(Prop):
     """
     Enrichments of case law documents from CAP, produced from by open-source libraries and large language models.
@@ -165,7 +140,9 @@ class DocumentEnrichments(Prop):
     def __init__(
         self,
         hf_dataset_ids: List[str],
+        hf_dataset_column: str,
         docs_per_dataset: int,
+        chat_completion_client: AISuiteClient,
         output: Path,
         extraction_model_id: str,
         delay: float,
@@ -173,7 +150,9 @@ class DocumentEnrichments(Prop):
     ):
         super().__init__(console)
         self.hf_dataset_ids = hf_dataset_ids
+        self.hf_dataset_column = hf_dataset_column
         self.docs_per_dataset = docs_per_dataset
+        self.chat_completion_client = chat_completion_client
         self.output = output
         self.extraction_model_id = extraction_model_id
         self.delay = delay
@@ -186,19 +165,41 @@ class DocumentEnrichments(Prop):
             )
             return
 
-        extract_from_opinion_chunks = make_extract_from_opinion_chunks(
+        docs = retrieve_documents(
+            hf_dataset_ids=self.hf_dataset_ids,
+            hf_dataset_column=self.hf_dataset_column,
+            docs_per_dataset=self.docs_per_dataset,
+        )
+
+        extract_from_opinion_chunks = make_extract_from_document_chunks(
             doc_as_rich,
+            self.chat_completion_client,
             self.extraction_model_id,
             chunk_extraction_template,
             LegalOpinionChunkExtractions,
-            delay=self.delay,
+            delay=10.0,
             console=self.console,
         )
 
-        enrich_documents(
-            retriever(self.hf_dataset_ids, self.docs_per_dataset),
-            extract_from_opinion_chunks,
-            doc_enrichments,
-            self.output,
-            console=self.console,
-        )
+        with Progress() as progress:
+
+            task_enrich = progress.add_task(
+                "[green]Enriching documents...", total=len(docs)
+            )
+
+            with open(self.output, "wt") as f:
+
+                for doc in docs:
+
+                    enrichments_json = enrich_document(
+                        doc, extract_from_opinion_chunks, doc_enrichments
+                    )
+                    f.write(enrichments_json + "\n")
+
+                    progress.update(task_enrich, advance=1)
+
+            log.info("Wrote document enrichments to %s", self.output)
+
+        assert (
+            self.output.exists()
+        ), f"Expected the enrichment file {self.output} to be created."
