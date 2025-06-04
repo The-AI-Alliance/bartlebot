@@ -21,7 +21,7 @@ from neomodel import (
 )
 from neo4j_graphrag.schema import get_schema
 
-from lapidarist.patterns.knowledge_graph import (
+from lapidarist.knowledge_graph import (
     load_knowledge_graph,
     Reference,
     RelationLabel as lapidarist_RelationLabel,

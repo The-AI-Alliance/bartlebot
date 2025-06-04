@@ -7,6 +7,7 @@ from rich.panel import Panel
 from uuid import UUID
 from pydantic import BaseModel, Field
 from langchain_core.documents.base import Document
+from aisuite import Client as AISuiteClient
 
 from neo4j import Driver
 from neo4j.graph import Node, Relationship
@@ -14,10 +15,11 @@ from neo4j_graphrag.schema import get_schema
 from neomodel import db
 from eyecite import get_citations
 
-from lapidarist.verbs.extract import partial_formatter
-from lapidarist.verbs.extract import extraction_system_prompt
-from lapidarist.verbs.extract import raw_extraction_template
-from lapidarist.verbs.vector_database import vector_db
+from lapidarist.read import retrieve_document
+from lapidarist.extract import partial_formatter
+from lapidarist.extract import extraction_system_prompt
+from lapidarist.extract import raw_extraction_template
+from lapidarist.vector_database import vector_db
 
 from proscenium.core import Character
 from proscenium.core import control_flow_system_prompt
@@ -25,7 +27,6 @@ from proscenium.core import WantsToHandleResponse
 from proscenium.verbs.complete import complete_simple
 from proscenium.patterns.graph_rag import query_to_prompts
 
-from .docs import retrieve_document
 from .docs import topic
 
 log = logging.getLogger(__name__)
@@ -155,6 +156,7 @@ class LawLibrarian(Character):
 
     def __init__(
         self,
+        chat_completion_client: AISuiteClient,
         driver: Driver,
         milvus_uri: str,
         query_extraction_model_id: str,
@@ -164,6 +166,7 @@ class LawLibrarian(Character):
         console: Optional[Console] = None,
     ):
         super().__init__(admin_channel_id=admin_channel_id)
+        self.chat_completion_client = chat_completion_client
         self.driver = driver
         db.set_connection(driver=driver)
         self.milvus_uri = milvus_uri
@@ -179,6 +182,7 @@ class LawLibrarian(Character):
         log.info("handle? channel_id = %s, speaker_id = %s", channel_id, speaker_id)
 
         response = complete_simple(
+            self.chat_completion_client,
             model_id=self.control_flow_model_id,
             system_prompt=control_flow_system_prompt,
             user_prompt=wants_to_handle_template.format(text=utterance),
