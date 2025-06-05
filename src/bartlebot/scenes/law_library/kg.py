@@ -26,7 +26,7 @@ from lapidarist.knowledge_graph import (
     Reference,
     RelationLabel as lapidarist_RelationLabel,
 )
-from proscenium.core import Prop
+from proscenium import Prop
 
 from .doc_enrichments import LegalOpinionEnrichments
 

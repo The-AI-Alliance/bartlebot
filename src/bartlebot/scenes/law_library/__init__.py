@@ -5,9 +5,9 @@ from rich.console import Console
 from neo4j import GraphDatabase
 from aisuite import Client as AISuiteClient
 
-from proscenium.core import Prop
-from proscenium.core import Character
-from proscenium.core import Scene
+from proscenium import Prop
+from proscenium import Character
+from proscenium import Scene
 
 from .doc_enrichments import DocumentEnrichments
 from .kg import CaseLawKnowledgeGraph
