@@ -21,10 +21,10 @@ from lapidarist.extract import extraction_system_prompt
 from lapidarist.extract import raw_extraction_template
 from lapidarist.vector_database import vector_db
 
-from proscenium.core import Character
-from proscenium.core import control_flow_system_prompt
-from proscenium.core import WantsToHandleResponse
-from proscenium.verbs.complete import complete_simple
+from proscenium import Character
+from proscenium import control_flow_system_prompt
+from proscenium import WantsToHandleResponse
+from proscenium.complete import complete_simple
 from proscenium.patterns.graph_rag import query_to_prompts
 
 from .docs import topic

@@ -17,7 +17,7 @@ from lapidarist.extract import raw_extraction_template
 from lapidarist.document_enricher import make_extract_from_document_chunks
 from lapidarist.document_enricher import enrich_document
 
-from proscenium.core import Prop
+from proscenium import Prop
 
 from .docs import doc_as_rich
 

@@ -10,7 +10,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt
 
-from proscenium.verbs.display import header
+from proscenium import header
 from proscenium.bin import production_from_config
 from proscenium.interfaces.slack import SlackProductionProcessor
 

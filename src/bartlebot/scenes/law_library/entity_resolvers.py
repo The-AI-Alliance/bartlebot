@@ -8,7 +8,7 @@ from lapidarist.entity_resolver import load_entity_resolver
 from lapidarist.entity_resolver import vector_db
 from lapidarist.entity_resolver import Resolver
 
-from proscenium.core import Prop
+from proscenium import Prop
 
 log = logging.getLogger(__name__)
 

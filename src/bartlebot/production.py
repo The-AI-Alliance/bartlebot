@@ -5,9 +5,9 @@ from pathlib import Path
 from rich.console import Console
 from aisuite import Client as AISuiteClient
 
-from proscenium.core import Production
-from proscenium.core import Character
-from proscenium.core import Scene
+from proscenium import Production
+from proscenium import Character
+from proscenium import Scene
 
 from bartlebot.scenes import law_library
 
