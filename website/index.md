@@ -14,6 +14,8 @@ It is in early development.
 
 See the [Bartlebot repository](https://github.com/The-AI-Alliance/bartlebot) on GitHub.
 
+[![PyPI version](https://img.shields.io/pypi/v/bartlebot.svg)](https://pypi.org/project/bartlebot/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/bartlebot)](https://pypi.org/project/bartlebot/)
 [![CI](https://github.com/The-AI-Alliance/bartlebot/actions/workflows/pytest.yml/badge.svg)](https://github.com/The-AI-Alliance/bartlebot/actions/workflows/pytest.yml)
 [![License](https://img.shields.io/github/license/The-AI-Alliance/bartlebot)](https://github.com/The-AI-Alliance/bartlebot/tree/main?tab=Apache-2.0-1-ov-file#readme)
 [![Issues](https://img.shields.io/github/issues/The-AI-Alliance/bartlebot)](https://github.com/The-AI-Alliance/bartlebot/issues)
