@@ -30,6 +30,12 @@ dependencies = [
   "eyecite>=2.6.11"
 ]
 
+[dependency-groups]
+unit = [
+]
+integration = [
+]
+
 [project.optional-dependencies]
 test = [
   "pytest>=8,<9",
