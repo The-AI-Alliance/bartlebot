@@ -16,7 +16,8 @@ See the [Bartlebot repository](https://github.com/The-AI-Alliance/bartlebot) on 
 
 [![PyPI version](https://img.shields.io/pypi/v/bartlebot.svg)](https://pypi.org/project/bartlebot/)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/bartlebot)](https://pypi.org/project/bartlebot/)
-[![CI](https://github.com/The-AI-Alliance/bartlebot/actions/workflows/pytest.yml/badge.svg)](https://github.com/The-AI-Alliance/bartlebot/actions/workflows/pytest.yml)
+[![Unit Tests](https://github.com/The-AI-Alliance/bartlebot/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/The-AI-Alliance/bartlebot/actions/workflows/unit-tests.yml?query=branch%3Amain)
+[![Integration Tests](https://github.com/The-AI-Alliance/bartlebot/actions/workflows/integration-tests.yml/badge.svg?branch=main)](https://github.com/The-AI-Alliance/bartlebot/actions/workflows/integration-tests.yml?query=branch%3Amain)
 [![License](https://img.shields.io/github/license/The-AI-Alliance/bartlebot)](https://github.com/The-AI-Alliance/bartlebot/tree/main?tab=Apache-2.0-1-ov-file#readme)
 [![Issues](https://img.shields.io/github/issues/The-AI-Alliance/bartlebot)](https://github.com/The-AI-Alliance/bartlebot/issues)
 [![GitHub stars](https://img.shields.io/github/stars/The-AI-Alliance/bartlebot?style=social)](https://github.com/The-AI-Alliance/bartlebot/stargazers)
