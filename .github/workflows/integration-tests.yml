@@ -1,4 +1,4 @@
-name: Run Python Tests
+name: Integration Tests
 
 on:
   workflow_dispatch:
@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ "main" ]
     types: [opened, synchronize, reopened]
+    paths:
+      - 'src/**'
+      - 'tests/integration/**'
+      - 'pyproject.toml'
+      - '.github/workflows/integration-tests.yml' # This workflow
+
 
   push:
     branches: [ "main" ]
@@ -39,4 +45,4 @@ jobs:
         uv pip install pytest
 
     - name: Run tests
-      run: uv run pytest
+      run: uv run --group integration pytest -s -v tests/integration/
